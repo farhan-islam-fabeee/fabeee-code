@@ -22,8 +22,8 @@ set_lang() {
   valid_lang "$code" || code=en
   load_catalog en
   [[ $code == en ]] || load_catalog "$code"
-  PI_KIT_LANG=$code
-  export PI_KIT_LANG
+  FABEEE_CODE_LANG=$code
+  export FABEEE_CODE_LANG
 }
 
 # t KEY [ARG...]: print the message for KEY, formatted with ARGs.

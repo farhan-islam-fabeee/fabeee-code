@@ -1,72 +1,76 @@
-# pi-agent-kit
+[English](README.en.md) | **日本語**
 
-A setup kit for running the [pi](https://pi.dev) coding agent on a **local model** (oMLX on Apple Silicon), with an optional **cloud** route (OpenRouter or any OpenAI-compatible API). It's tuned for **code quality at minimal token cost**. Locally that cost is time; in the cloud it's money.
+# fabeee-code
 
-It was tuned for pi 1.2.0, an M5 Pro with 24 GB, and oMLX serving `Qwen3.8-27B-4bit`. Adjust the model ID, context size and memory figures for your machine.
+コーディングエージェント [pi](https://pi.dev) を**ローカルモデル**（Apple Silicon 上の oMLX）で動かすためのセットアップキットです。必要に応じて**クラウド**（OpenRouter や任意の OpenAI 互換 API）も使えます。**最小限のトークンでコードの品質を上げる**ことを目指して調整しています。トークンのコストは、ローカルでは時間、クラウドでは料金です。
 
-## Layout
+pi 1.2.0、M5 Pro（24 GB）、`Qwen3.8-27B-4bit` を動かす oMLX の環境で調整しました。モデル ID、コンテキストサイズ、メモリの数値はお使いのマシンに合わせて変更してください。
+
+## 構成
 
 ```
-docs/gameplan.md            the full plan: phases 0–7, rationale, rollout checklist
-docs/research.md            package and MCP findings (adopted / A-B / rejected), cache pricing, open questions
-skills/                     8 token- and compaction-saving skills (Agent Skills format)
-context/AGENTS.md           global rules installed with the skills: Japanese for comments, docs and replies; terse English internally
-skills-ja/                  Japanese translations, kept for reference (they cost 13–71% more tokens depending on the model; see docs/research.md)
-config/models.local.json    oMLX provider: context window matched to the server, sampling per thinking level
-config/settings.json        pi settings: low thinking, codemode, compaction sized for 32k
-config/mcp.json             Probe (local code search) + Context7 (docs)
-config/models.cloud.example.json  template for any OpenAI-compatible cloud provider
-extensions/quality-gate.ts  runs the project's fast check when the agent finishes and feeds failures back
-scripts/setup.sh            guided setup, run from a project folder: installs pi, configures local/cloud, installs the kit, prepares the project
-scripts/lib/pi-config.mjs   JSON/project helper used by setup.sh (backs up every file it changes)
-scripts/lib/i18n.sh         message loader; catalogs in scripts/lib/lang/{en,ja,ko,bn}.txt
-scripts/lib/check-i18n.mjs  checks the catalogs have the same keys and placeholders (run after editing messages)
-scripts/install.sh          installs skills, the extension, MCP config and package tiers
-scripts/count_tokens.py     compares token counts of skills/ vs skills-ja/ across tokenizers (HF tokenizer.json, OpenAI o200k, Kimi)
+docs/gameplan.md            計画の全体: Phase 0〜7、各判断の理由、導入チェックリスト
+docs/research.md            パッケージと MCP の調査結果（採用・A/B テスト・不採用）、キャッシュ料金、未検証の点
+skills/                     トークンと圧縮を節約する 8 つのスキル（Agent Skills 形式）
+context/AGENTS.md           スキルと一緒にインストールするグローバルルール: コメント・ドキュメント・応答は日本語、内部作業は簡潔な英語
+skills-ja/                  スキルの日本語訳（参照用。モデルによってトークンが 13〜71% 増えます。docs/research.md を参照）
+config/models.local.json    oMLX プロバイダー: コンテキストウィンドウをサーバーに合わせ、思考レベルごとにサンプリングを設定
+config/settings.json        pi の設定: 思考レベル低め、codemode、32k 向けの圧縮設定
+config/mcp.json             Probe（ローカルのコード検索）と Context7（ドキュメント）
+config/models.cloud.example.json  OpenAI 互換クラウドプロバイダー用のテンプレート
+extensions/quality-gate.ts  エージェントの作業終了時にプロジェクトの高速チェックを実行し、失敗を差し戻す
+scripts/setup.sh            対話式セットアップ（プロジェクトフォルダーで実行）: pi のインストール、ローカル/クラウドの設定、キットの導入、プロジェクトの準備
+scripts/lib/pi-config.mjs   setup.sh が使う JSON/プロジェクト用ヘルパー（変更するファイルはすべてバックアップ）
+scripts/lib/i18n.sh         メッセージの読み込み。カタログは scripts/lib/lang/{en,ja,ko,bn}.txt
+scripts/lib/check-i18n.mjs  カタログのキーとプレースホルダーが揃っているかを確認（メッセージ編集後に実行）
+scripts/install.sh          スキル、拡張機能、MCP 設定、パッケージ群をインストール
+scripts/count_tokens.py     skills/ と skills-ja/ のトークン数を複数のトークナイザーで比較（HF tokenizer.json、OpenAI o200k、Kimi）
 ```
 
-## Quick start
+## クイックスタート
 
-Run the guided setup from inside the project you want to work on:
+作業したいプロジェクトのフォルダーで、対話式セットアップを実行します。
 
 ```bash
 cd ~/path/to/your-project
 ```
 
 ```bash
-~/Development/pi-agent-kit/scripts/setup.sh
+~/Development/fabeee-code/scripts/setup.sh
 ```
 
-It first asks for a display language: English, 日本語, 한국어 or বাংলা. Your system locale sets the default, and `--lang=ja` (or `PI_KIT_LANG=ja`) skips the question. Then it walks through 7 steps and asks before each change:
+最初に表示言語（English、日本語、한국어、বাংলা）を尋ねます。既定値はシステムのロケールで決まり、`--lang=ja`（または `FABEEE_CODE_LANG=ja`）を指定すると質問を省略できます。そのあと 7 つのステップを順に進め、変更の前には毎回確認します。
 
-1. **Project:** confirms the folder.
-2. **pi:** installs pi if it's missing (the official installer or npm) and checks the version.
-3. **Models:** choose local, cloud or both.
-   - **Local:** oMLX, Ollama, LM Studio, a llama.cpp router, or any OpenAI-compatible server. The script lists the server's models and asks for the context window the server *actually* serves (for oMLX it reads `~/.omlx/settings.json`).
-   - **Cloud:** OpenRouter, DeepSeek, Z.ai, Moonshot, the other providers built into pi, or a custom OpenAI-compatible endpoint with prices and cache lifetime.
-   - **API keys:** store them in the macOS Keychain (pi runs `security` on each request), in an environment variable, with pi's own `/login`, or, for a local server only, as plain text.
-4. **Settings:** writes pi's settings (low thinking by default, codemode, compaction sized to the local window), sets the default model (globally or for this project only), and can add `pil`/`pic` shell aliases.
-5. **Kit:** installs the skills, the global `AGENTS.md`, the quality gate, and the Probe and Context7 MCP servers.
-6. **Packages:** offers each package tier separately. Every package runs code, so each one asks first.
-7. **Project files:** sets up git, `.pi/check` (detected from package.json, Cargo, Go or Python), a starter `AGENTS.md`, and `.gitignore`.
+1. **プロジェクト:** 対象フォルダーを確認します。
+2. **pi:** pi がなければインストールし（公式インストーラーまたは npm）、バージョンを確認します。
+3. **モデル:** ローカル、クラウド、または両方を選びます。
+   - **ローカル:** oMLX、Ollama、LM Studio、llama.cpp ルーター、または任意の OpenAI 互換サーバー。サーバーのモデル一覧から選べます。コンテキストウィンドウは、サーバーが*実際に*扱える値を尋ねます（oMLX の場合は `~/.omlx/settings.json` から読み取ります）。
+   - **クラウド:** OpenRouter、DeepSeek、Z.ai、Moonshot、pi に組み込まれたその他のプロバイダー、または料金とキャッシュ保持時間を指定したカスタムの OpenAI 互換エンドポイント。
+   - **API キー:** macOS キーチェーン（pi がリクエストごとに `security` で読み取ります）、環境変数、pi の `/login`、ローカルサーバーの場合のみ平文、から保存先を選べます。
+4. **設定:** pi の設定（思考レベルは低め、codemode、ローカルのウィンドウに合わせた圧縮）を書き込み、デフォルトのモデル（全体またはこのプロジェクトのみ）を設定します。シェルのエイリアス `pil`/`pic` も追加できます。
+5. **キット:** スキル、グローバルの `AGENTS.md`、品質ゲート、MCP サーバーの Probe と Context7 をインストールします。
+6. **パッケージ:** パッケージ群ごとに確認しながらインストールします。パッケージはコードを実行するため、それぞれ事前に確認します。
+7. **プロジェクトファイル:** git、`.pi/check`（package.json、Cargo、Go、Python から自動検出）、ひな形の `AGENTS.md`、`.gitignore` を用意します。
 
-Every pi config file it changes is backed up first (`<file>.backup-<timestamp>`), and it's safe to re-run. `--dry-run` asks the same questions but writes nothing.
+変更する pi の設定ファイルは、事前にすべてバックアップします（`<file>.backup-<timestamp>`）。何度実行しても安全です。`--dry-run` を付けると、同じ質問をしたうえで何も書き込みません。
 
-To install pieces by hand instead, `./scripts/install.sh all` installs the skills, `AGENTS.md`, the extension and the MCP config, and `./scripts/install.sh packages <tier>` installs one tier (`core`, `tokens`, `ondemand`, `tuning`, `cloud`, `ab`). Merge [config/models.local.json](config/models.local.json) and [config/settings.json](config/settings.json) into `~/.pi/agent/` yourself (gameplan Phase 0–1).
+手動で個別にインストールする場合は、`./scripts/install.sh all` でスキル、`AGENTS.md`、拡張機能、MCP 設定を、`./scripts/install.sh packages <tier>` でパッケージ群を 1 つ（`core`、`tokens`、`ondemand`、`tuning`、`cloud`、`ab`）インストールします。[config/models.local.json](config/models.local.json) と [config/settings.json](config/settings.json) は、ご自身で `~/.pi/agent/` に統合してください（gameplan の Phase 0〜1）。
 
-## Skills
+## スキル
 
-| Skill | Saves tokens by |
+| スキル | トークンを節約する方法 |
 |---|---|
-| [lean-read](skills/lean-read/SKILL.md) | Searching (Probe, `rg`, `fd`) before reading, reading line ranges only, never re-reading |
-| [quiet-shell](skills/quiet-shell/SKILL.md) | Using quiet flags, `--stat` before a full diff, and logging long output to a file then grepping it |
-| [batch-tools](skills/batch-tools/SKILL.md) | Doing 3+ lookups in one codemode script that returns a short summary |
-| [delegate-scout](skills/delegate-scout/SKILL.md) | Sending broad exploration to a `scout` subagent that replies in 150 words or fewer |
-| [project-map](skills/project-map/SKILL.md) | Keeping a `.pi/MAP.md` of 60 lines or fewer so new sessions skip re-exploring |
-| [handoff](skills/handoff/SKILL.md) | Saving state to `.pi/handoff.md` and starting a fresh session instead of compacting |
-| [resume](skills/resume/SKILL.md) | Starting a session from the handoff file and map (`/skill:resume`) |
-| [docs-lookup](skills/docs-lookup/SKILL.md) | Querying Context7 narrowly and caching the answer in `.pi/notes/` |
+| [lean-read](skills/lean-read/SKILL.md) | 読む前に検索する（Probe、`rg`、`fd`）。必要な行範囲だけを読み、同じファイルを読み直さない |
+| [quiet-shell](skills/quiet-shell/SKILL.md) | 静音フラグを使い、差分全体の前に `--stat` を見る。長い出力はファイルに書き出してから絞り込む |
+| [batch-tools](skills/batch-tools/SKILL.md) | 3 つ以上の検索を 1 つの codemode スクリプトにまとめ、短い要約だけを返す |
+| [delegate-scout](skills/delegate-scout/SKILL.md) | 広い探索を `scout` サブエージェントに任せ、150 語以内で答えさせる |
+| [project-map](skills/project-map/SKILL.md) | 60 行以内の `.pi/MAP.md` を保ち、新しいセッションで再探索しなくて済むようにする |
+| [handoff](skills/handoff/SKILL.md) | 状態を `.pi/handoff.md` に保存し、圧縮の代わりに新しいセッションで続ける |
+| [resume](skills/resume/SKILL.md) | 引き継ぎファイルとマップからセッションを再開する（`/skill:resume`） |
+| [docs-lookup](skills/docs-lookup/SKILL.md) | Context7 に狭く問い合わせ、答えを `.pi/notes/` に保存して使い回す |
 
-## Status
+## 現状
 
-This is a plan plus starter files, and none of it has been run end to end yet. The skills and quality gate haven't been run inside pi, and several config details still need checking against pi's schemas. [docs/research.md](docs/research.md) lists them under "Not verified".
+`scripts/setup.sh` は、使い捨てのフォルダーとモックのモデルサーバーを使って、4 言語すべてで通しのテストを済ませています。スキルと品質ゲートはまだ pi の中で動かしていません。設定の細かい点にも、pi のスキーマとの照合が必要なものが残っています。未検証の点は [docs/research.md](docs/research.md) の「Not verified」にまとめています。
+
+ドキュメント（`docs/` 以下）は現在英語のみです。

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install parts of pi-agent-kit into your pi setup.
+# Install parts of fabeee-code into your pi setup.
 # Never overwrites models.json or settings.json; existing skills, extensions and AGENTS.md are backed up first.
 #
 #   ./scripts/install.sh skills              copy skills/* to ~/.agents/skills/ and context/AGENTS.md to ~/.pi/agent/
@@ -9,17 +9,17 @@
 #   ./scripts/install.sh packages <tier>     pi install the packages in a tier (see TIERS below)
 #   ./scripts/install.sh all                 skills + extension + mcp (no packages)
 #
-# Set DRY_RUN=1 to print actions without doing them. Messages follow PI_KIT_LANG (en, ja, ko, bn).
+# Set DRY_RUN=1 to print actions without doing them. Messages follow FABEEE_CODE_LANG (en, ja, ko, bn).
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SKILLS_DIR="${HOME}/.agents/skills"
 PI_DIR="${PI_CODING_AGENT_DIR:-${HOME}/.pi/agent}"
-STAMP="${PI_KIT_STAMP:-$(date +%Y%m%d-%H%M%S)}"
+STAMP="${FABEEE_CODE_STAMP:-$(date +%Y%m%d-%H%M%S)}"
 # shellcheck source=lib/i18n.sh
 source "$ROOT/scripts/lib/i18n.sh"
-set_lang "${PI_KIT_LANG:-en}"
+set_lang "${FABEEE_CODE_LANG:-en}"
 
 core=(pi-lens cc-safety-net @ssk_dev/rpiv-todo-lean pi-token-killer)
 tokens=(@sting8k/pi-vcc pi-prefix-stabilizer pi-caveman)

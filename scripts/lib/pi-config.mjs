@@ -3,7 +3,7 @@
 //
 //   upsert-provider <models.json>            provider + optional model from PK_* env
 //   has-provider <models.json> <id>          exit 0 if the provider exists
-//   list-models <baseUrl>                    GET <baseUrl>/models (key in PI_KIT_KEY), one id per line
+//   list-models <baseUrl>                    GET <baseUrl>/models (key in FABEEE_CODE_KEY), one id per line
 //   json-get <file> <dotted.path>            print a value, exit 1 if missing
 //   apply-settings <settings.json> preview|write   pi settings from PK_* env
 //   merge-mcp <mcp.json> <kit mcp.json> <server...>  add the named servers if missing
@@ -12,11 +12,11 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const DRY = process.env.PI_KIT_DRY_RUN === "1";
-const STAMP = process.env.PI_KIT_STAMP || String(Date.now());
+const DRY = process.env.FABEEE_CODE_DRY_RUN === "1";
+const STAMP = process.env.FABEEE_CODE_STAMP || String(Date.now());
 const env = (name, fallback = "") => process.env[name] ?? fallback;
 
-// Messages printed to the user, in the language setup.sh chose (PI_KIT_LANG).
+// Messages printed to the user, in the language setup.sh chose (FABEEE_CODE_LANG).
 const MESSAGES = {
   en: { unchanged: "unchanged", dryWrite: "[dry-run] would write", backup: "backup", wrote: "wrote",
         noChanges: "(no changes)", unset: "(unset)", keptMcp: "kept existing MCP server", addedMcp: "added MCP server" },
@@ -27,7 +27,7 @@ const MESSAGES = {
   bn: { unchanged: "অপরিবর্তিত", dryWrite: "[ড্রাই রান] যা লেখা হবে", backup: "ব্যাকআপ", wrote: "লেখা হয়েছে",
         noChanges: "(কোনো পরিবর্তন নেই)", unset: "(সেট করা নেই)", keptMcp: "বিদ্যমান MCP সার্ভার রাখা হয়েছে", addedMcp: "MCP সার্ভার যোগ করা হয়েছে" },
 };
-const msg = (key) => (MESSAGES[env("PI_KIT_LANG")] || MESSAGES.en)[key];
+const msg = (key) => (MESSAGES[env("FABEEE_CODE_LANG")] || MESSAGES.en)[key];
 
 const isObj = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 
@@ -105,7 +105,7 @@ function upsertProvider(file) {
 
 async function listModels(baseUrl) {
   const headers = {};
-  if (env("PI_KIT_KEY")) headers.Authorization = `Bearer ${env("PI_KIT_KEY")}`;
+  if (env("FABEEE_CODE_KEY")) headers.Authorization = `Bearer ${env("FABEEE_CODE_KEY")}`;
   const res = await fetch(`${baseUrl.replace(/\/$/, "")}/models`, { headers, signal: AbortSignal.timeout(5000) });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const body = await res.json();

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Set up pi with pi-agent-kit for the project in the current directory.
+# Set up pi with fabeee-code for the project in the current directory.
 #
 #   cd /path/to/your-project
-#   /path/to/pi-agent-kit/scripts/setup.sh [--dry-run] [--lang=en|ja|ko|bn]
+#   /path/to/fabeee-code/scripts/setup.sh [--dry-run] [--lang=en|ja|ko|bn]
 #
 # Asks for a display language first (English, Japanese, Korean or Bengali; skip the question
-# with --lang or PI_KIT_LANG). Then installs pi if missing, configures a local server, a cloud
+# with --lang or FABEEE_CODE_LANG). Then installs pi if missing, configures a local server, a cloud
 # provider or both, installs the kit (skills, global AGENTS.md, quality gate, MCP servers,
 # packages you pick) and prepares the project (.pi/check, starter AGENTS.md, .gitignore).
 # Every pi config file it changes is backed up first (<file>.backup-<timestamp>).
@@ -15,9 +15,9 @@ set -euo pipefail
 KIT="$(cd "$(dirname "$0")/.." && pwd)"
 PROJECT="$(pwd)"
 PI_DIR="${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}"
-PI_KIT_STAMP="$(date +%Y%m%d-%H%M%S)"
+FABEEE_CODE_STAMP="$(date +%Y%m%d-%H%M%S)"
 # shellcheck source=lib/i18n.sh
-LANG_ARG="${PI_KIT_LANG:-}"   # read before set_lang, which exports PI_KIT_LANG
+LANG_ARG="${FABEEE_CODE_LANG:-}"   # read before set_lang, which exports FABEEE_CODE_LANG
 source "$KIT/scripts/lib/i18n.sh"
 set_lang en
 
@@ -31,7 +31,7 @@ for arg in "$@"; do
   esac
 done
 if [[ -n $LANG_ARG ]] && valid_lang "$LANG_ARG"; then set_lang "$LANG_ARG"; else choose_language; fi
-export DRY_RUN PI_KIT_STAMP PI_KIT_DRY_RUN="$DRY_RUN"
+export DRY_RUN FABEEE_CODE_STAMP FABEEE_CODE_DRY_RUN="$DRY_RUN"
 
 # ---------- ui ----------
 if [[ -t 1 ]]; then B=$'\033[1m' DIM=$'\033[2m' G=$'\033[32m' Y=$'\033[33m' R=$'\033[31m' N=$'\033[0m'
@@ -92,7 +92,7 @@ cfg() { "$NODE" "$KIT/scripts/lib/pi-config.mjs" "$@"; }
 # Sets KEY_REF (models.json "apiKey" value, empty = leave pi's default lookup alone),
 # KEY_VALUE (in memory only, used to list models during setup) and NEED_LOGIN.
 pick_key_storage() {
-  local id=$1 envvar=$2 allow_plain=$3 allow_login=$4 c svc="pi-agent-kit:$1"
+  local id=$1 envvar=$2 allow_plain=$3 allow_login=$4 c svc="fabeee-code:$1"
   local labels=() kinds=()
   if [[ $allow_login == 1 ]]; then labels+=("$(t key_login "$id")"); kinds+=(login); fi
   if [[ $(uname) == Darwin ]]; then labels+=("$(t key_keychain)"); kinds+=(keychain); fi
@@ -107,10 +107,10 @@ pick_key_storage() {
         ask_secret KEY_VALUE "$(t key_dry "$id")"
       else
         info "$(t key_twice)"
-        security add-generic-password -U -a pi-agent-kit -s "$svc" -w || die "$(t keychain_failed)"
-        KEY_VALUE=$(security find-generic-password -a pi-agent-kit -s "$svc" -w)
+        security add-generic-password -U -a fabeee-code -s "$svc" -w || die "$(t keychain_failed)"
+        KEY_VALUE=$(security find-generic-password -a fabeee-code -s "$svc" -w)
       fi
-      KEY_REF="!security find-generic-password -a pi-agent-kit -s $svc -w"
+      KEY_REF="!security find-generic-password -a fabeee-code -s $svc -w"
       [[ $DRY_RUN == 1 ]] || ok "$(t key_stored "$svc")" ;;
     env)
       if [[ -n ${!envvar:-} ]]; then KEY_VALUE=${!envvar}; ok "$(t env_set "$envvar")"
@@ -229,7 +229,7 @@ setup_local() {
   local r
   while true; do
     info "$(t asking_models "$LOCAL_URL")"
-    if ids=$(PI_KIT_KEY="$KEY_VALUE" cfg list-models "$LOCAL_URL" 2>/dev/null); then pick_model model "$ids"; break; fi
+    if ids=$(FABEEE_CODE_KEY="$KEY_VALUE" cfg list-models "$LOCAL_URL" 2>/dev/null); then pick_model model "$ids"; break; fi
     warn "$(t list_failed)"
     choose r "$(t what_now)" "$(t retry)" "$(t type_model)"
     if [ "$r" -eq 2 ]; then ask model "$(t model_id_server)" ""; break; fi
@@ -296,7 +296,7 @@ setup_cloud() {
   else
     ask url "$(t base_url_v1)" "https://api.example.com/v1"
     pick_key_storage "$CLOUD_PROVIDER" "$envvar" 0 0
-    if ids=$(PI_KIT_KEY="$KEY_VALUE" cfg list-models "$url" 2>/dev/null); then pick_model model "$ids"
+    if ids=$(FABEEE_CODE_KEY="$KEY_VALUE" cfg list-models "$url" 2>/dev/null); then pick_model model "$ids"
     else warn "$(t list_failed_url "$url")"; ask model "$(t model_id)" ""; fi
     [[ -n $model ]] || die "$(t model_required_custom)"
     ask ctx "$(t ctx_q)" "131072"
@@ -349,13 +349,13 @@ fi
 
 if [[ -n $LOCAL_MODEL || -n $CLOUD_MODEL ]] && confirm "$(t aliases_q)" n; then
   rc="$HOME/.bashrc"; [[ ${SHELL:-} == */zsh ]] && rc="$HOME/.zshrc"
-  block="# >>> pi-agent-kit >>>"$'\n'
+  block="# >>> fabeee-code >>>"$'\n'
   [[ -n $LOCAL_MODEL ]] && block+="alias pil='pi --model $LOCAL_MODEL'"$'\n'
   [[ -n $CLOUD_MODEL ]] && block+="alias pic='pi --model $CLOUD_MODEL:low'"$'\n'
-  block+="# <<< pi-agent-kit <<<"
+  block+="# <<< fabeee-code <<<"
   if [[ $DRY_RUN == 1 ]]; then printf '%s+ %s%s\n%s\n' "$DIM" "$(t aliases_dry "$rc")" "$N" "$block"
   else
-    [[ -f $rc ]] && sed -i.backup-"$PI_KIT_STAMP" '/^# >>> pi-agent-kit >>>$/,/^# <<< pi-agent-kit <<<$/d' "$rc"
+    [[ -f $rc ]] && sed -i.backup-"$FABEEE_CODE_STAMP" '/^# >>> fabeee-code >>>$/,/^# <<< fabeee-code <<<$/d' "$rc"
     printf '\n%s\n' "$block" >> "$rc"
     ok "$(t aliases_added "$rc")"
   fi
