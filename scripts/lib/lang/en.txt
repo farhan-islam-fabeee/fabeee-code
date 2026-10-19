@@ -173,8 +173,9 @@ omlx_tip1=oMLX dashboard: turn on chunked prefill and the prefill memory guard, 
 omlx_tip2=and keep the SSD cache on (docs/gameplan.md, Phase 0.3).
 measure=Measure before adding more: docs/gameplan.md, Phase 6.
 dry_done=Dry run finished; nothing was changed.
+setup_done=Setup finished.
 # install.sh
-inst_skill=  skill: %s
+inst_skill=skills: %s
 inst_skills_done=Skills installed in %s. In pi, /skills-global copies chosen ones to ~/.pi/agent/skills for every project.
 inst_agents_same=  agent rules already up to date in %s
 inst_agents_done=  agent rules (language, terse internals) written to %s

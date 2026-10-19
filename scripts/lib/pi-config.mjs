@@ -167,8 +167,8 @@ function applySettings(file, mode) {
   if (mode === "preview") {
     const before = new Map(flatten(current));
     const changes = flatten(next).filter(([k, v]) => k !== "$schema" && before.get(k) !== v);
-    if (!changes.length) console.log(`  ${msg("noChanges")}`);
-    for (const [k, v] of changes) console.log(`  ${k}: ${before.get(k) ?? msg("unset")} -> ${v}`);
+    if (!changes.length) console.log(`    ${msg("noChanges")}`);
+    for (const [k, v] of changes) console.log(`    ${k}: ${before.get(k) ?? msg("unset")} -> ${v}`);
     return;
   }
   writeJson(file, next);

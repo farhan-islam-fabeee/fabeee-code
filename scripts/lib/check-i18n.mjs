@@ -19,7 +19,7 @@ function parse(file) {
 }
 
 const placeholders = (s) => (s.replace(/%%/g, "").match(/%s/g) || []).length;
-const used = new Set(scripts.flatMap((f) => [...fs.readFileSync(f, "utf8").matchAll(/(?:\$\(|[;{|&]\s*|^\s*)t ([a-z][a-z0-9_]*)/gm)].map((m) => m[1])));
+const used = new Set(scripts.flatMap((f) => [...fs.readFileSync(f, "utf8").matchAll(/(?:\$\(|[;{|&)]\s*|^\s*)(?:t|say) ([a-z][a-z0-9_]*)/gm)].map((m) => m[1])));
 const en = parse(path.join(langDir, "en.txt"));
 const problems = [];
 

@@ -48,10 +48,11 @@ choose_language() {
   local codes=(en ja ko bn) def i=1 ans=""
   def=$(detect_lang)
   for c in "${codes[@]}"; do [[ $c == "$def" ]] && break; i=$((i + 1)); done
-  printf '%s\n' "Choose a language / 言語を選んでください / 언어를 선택하세요 / ভাষা বেছে নিন"
-  printf '  1) English\n  2) 日本語\n  3) 한국어\n  4) বাংলা\n'
+  local c="${C:-}" b="${B:-}" d="${DIM:-}" n="${N:-}"
+  printf '\n  %s?%s %sLanguage / 言語 / 언어 / ভাষা%s\n' "$c" "$n" "$b" "$n"
+  printf '    %s1%s  English\n    %s2%s  日本語\n    %s3%s  한국어\n    %s4%s  বাংলা\n' "$c" "$n" "$c" "$n" "$c" "$n" "$c" "$n"
   while true; do
-    read -r -p "[1-4] (Enter = $i): " ans || exit 1
+    read -r -p "  ${c}›${n} 1-4 ${d}[$i]${n}: " ans || exit 1
     ans=${ans:-$i}
     if [[ $ans =~ ^[1-4]$ ]]; then break; fi
     printf '%s\n' "1-4"

@@ -30,47 +30,66 @@ for arg in "$@"; do
     *) printf '%s\n' "$(t unknown_option "$arg")" >&2; exit 2 ;;
   esac
 done
+# Colors only on a terminal, and never when NO_COLOR is set (https://no-color.org).
+if [[ -t 1 && -z ${NO_COLOR:-} ]]; then
+  B=$'\033[1m' DIM=$'\033[2m' G=$'\033[32m' Y=$'\033[33m' R=$'\033[31m' C=$'\033[36m' N=$'\033[0m'
+else B="" DIM="" G="" Y="" R="" C="" N=""; fi
+RULE="──────────────────────────────────────────────────────────"
+printf '\n %s┌──────────────────────────────────────────┐%s\n' "$C" "$N"
+printf ' %s│%s  %sfabeee-code%s  %s·  pi coding agent setup%s  %s│%s\n' "$C" "$N" "$B" "$N" "$DIM" "$N" "$C" "$N"
+printf ' %s└──────────────────────────────────────────┘%s\n' "$C" "$N"
 if [[ -n $LANG_ARG ]] && valid_lang "$LANG_ARG"; then set_lang "$LANG_ARG"; else choose_language; fi
 export DRY_RUN FABEEE_CODE_STAMP FABEEE_CODE_DRY_RUN="$DRY_RUN"
 
 # ---------- ui ----------
-if [[ -t 1 ]]; then B=$'\033[1m' DIM=$'\033[2m' G=$'\033[32m' Y=$'\033[33m' R=$'\033[31m' N=$'\033[0m'
-else B="" DIM="" G="" Y="" R="" N=""; fi
-step() { printf '\n%s== %s ==%s\n' "$B" "$*" "$N"; }
-info() { printf '%s\n' "$*"; }
-ok()   { printf '%s✓%s %s\n' "$G" "$N" "$*"; }
-warn() { printf '%s!%s %s\n' "$Y" "$N" "$*"; }
-die()  { printf '%s✗ %s%s\n' "$R" "$*" "$N" >&2; exit 1; }
-run()  { if [[ $DRY_RUN == 1 ]]; then printf '%s+ %s%s\n' "$DIM" "$*" "$N"; else "$@"; fi; }
+# Steps read as:   1/7  Title        Questions:  ? Question        Results:  ✓ done  ! note  ✗ error
+#                  ───────────                   1  option
+#                                                › Choose 1-3:
+step() {
+  local title=$* num="•" re='^([0-9]+/[0-9]+) (.*)$'
+  if [[ $title =~ $re ]]; then num=${BASH_REMATCH[1]}; title=${BASH_REMATCH[2]}; fi
+  printf '\n %s%s%s  %s%s%s\n' "$C$B" "$num" "$N" "$B" "$title" "$N"
+  printf ' %s%s%s\n' "$DIM" "$RULE" "$N"
+}
+info() { printf '  %s\n' "$*"; }
+note() { printf '  %s%s%s\n' "$DIM" "$*" "$N"; }
+ok()   { printf '  %s✓%s %s\n' "$G" "$N" "$*"; }
+warn() { printf '  %s!%s %s\n' "$Y" "$N" "$(trim "$*")"; }
+die()  { printf '\n  %s✗ %s%s\n' "$R" "$*" "$N" >&2; exit 1; }
+run()  { if [[ $DRY_RUN == 1 ]]; then printf '  %s+ %s%s\n' "$DIM" "$*" "$N"; else "$@"; fi; }
+Q="  $C?$N "                # question marker
+trim() { printf '%s' "${1#"${1%%[! ]*}"}"; }   # some catalog messages start with spaces
+P="  ${C}›${N} "                # input marker
 
 ask() { # ask VAR "Prompt" [default]
-  local __var=$1 __prompt=$2 __def=${3:-} __ans=""
-  if [[ -n $__def ]]; then read -r -p "$__prompt [$__def]: " __ans || die "$(t no_input)"
-  else read -r -p "$__prompt: " __ans || die "$(t no_input)"; fi
+  local __var=$1 __prompt __def=${3:-} __ans=""
+  __prompt=$(trim "$2")
+  if [[ -n $__def ]]; then read -r -p "$Q$__prompt $DIM[$__def]$N: " __ans || die "$(t no_input)"
+  else read -r -p "$Q$__prompt: " __ans || die "$(t no_input)"; fi
   printf -v "$__var" '%s' "${__ans:-$__def}"
 }
 
 ask_secret() { # ask_secret VAR "Prompt"
   local __var=$1 __ans=""
-  read -r -s -p "$2: " __ans || die "$(t no_input)"
+  read -r -s -p "$Q$2: " __ans || die "$(t no_input)"
   printf '\n'
   printf -v "$__var" '%s' "$__ans"
 }
 
 confirm() { # confirm "Question" [y|n]
-  local def=${2:-y} hint="[Y/n]" ans=""
-  [[ $def == n ]] && hint="[y/N]"
-  read -r -p "$1 $hint " ans || die "$(t no_input)"
+  local def=${2:-y} hint="Y/n" ans=""
+  [[ $def == n ]] && hint="y/N"
+  read -r -p "$Q$(trim "$1") $DIM[$hint]$N " ans || die "$(t no_input)"
   case "${ans:-$def}" in [Yy]*) return 0 ;; *) return 1 ;; esac
 }
 
 choose() { # choose VAR "Question" option... -> VAR is the 1-based index
   local __var=$1 __q=$2 i=1 o ans=""
   shift 2
-  printf '%s\n' "$__q"
-  for o in "$@"; do printf '  %d) %s\n' "$i" "$o"; i=$((i + 1)); done
+  printf '%s%s%s%s\n' "$Q" "$B" "$__q" "$N"
+  for o in "$@"; do printf '    %s%2d%s  %s\n' "$C" "$i" "$N" "$o"; i=$((i + 1)); done
   while true; do
-    read -r -p "$(t choose_n $#) " ans || die "$(t no_input)"
+    read -r -p "$P$(t choose_n $#) " ans || die "$(t no_input)"
     if [[ $ans =~ ^[0-9]+$ ]] && [ "$ans" -ge 1 ] && [ "$ans" -le $# ]; then break; fi
     warn "$(t enter_number $#)"
   done
@@ -395,7 +414,7 @@ ENABLED=""
 export PK_DEFAULT=$DEFAULT_MODEL PK_LOCAL_MODEL=$LOCAL_MODEL PK_LOCAL_CTX=$LOCAL_CTX PK_ENABLED_MODELS=$ENABLED
 info "$(t settings_changes "$SETTINGS")"
 cfg apply-settings "$SETTINGS" preview
-info "${DIM}$(t settings_note)${N}"
+note "$(t settings_note)"
 if confirm "$(t apply_q)" y; then cfg apply-settings "$SETTINGS" write; else warn "$(t settings_skipped)"; fi
 
 # ---------- 5. kit ----------
@@ -432,7 +451,7 @@ offer_tier core y "$(t tier_core)"
 offer_tier tokens y "$(t tier_tokens)"
 offer_tier ondemand y "$(t tier_ondemand)"
 if [[ $USE_CLOUD == 1 ]]; then
-  [[ $USE_LOCAL == 1 ]] && info "${DIM}$(t context_diet_note)${N}"
+  [[ $USE_LOCAL == 1 ]] && note "$(t context_diet_note)"
   offer_tier cloud y "$(t tier_cloud)"
 fi
 offer_tier tuning n "$(t tier_tuning)"
@@ -498,6 +517,8 @@ if [[ $LOCAL_BACKEND == omlx ]]; then
   info "$(t omlx_tip2)"
 fi
 info ""
-info "$(t measure)"
-[[ $DRY_RUN == 1 ]] && warn "$(t dry_done)"
+note "$(t measure)"
+printf '\n'
+if [[ $DRY_RUN == 1 ]]; then warn "$(t dry_done)"; else ok "$B$(t setup_done)$N"; fi
+printf '\n'
 exit 0

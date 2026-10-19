@@ -173,8 +173,9 @@ omlx_tip1=oMLX のダッシュボード: chunked prefill と prefill memory guar
 omlx_tip2=SSD キャッシュは有効のままにしてください（docs/gameplan.md、Phase 0.3）。
 measure=さらに追加する前に計測してください: docs/gameplan.md、Phase 6。
 dry_done=ドライランが完了しました。何も変更していません。
+setup_done=セットアップが完了しました。
 # install.sh
-inst_skill=  スキル: %s
+inst_skill=スキル: %s
 inst_skills_done=スキルを %s にインストールしました。pi で /skills-global を実行すると、選んだスキルを ~/.pi/agent/skills にコピーして全プロジェクトで使えます。
 inst_agents_same=  %s のエージェントルールはすでに最新です
 inst_agents_done=  エージェントルール（言語、簡潔な内部作業）を %s に書き込みました

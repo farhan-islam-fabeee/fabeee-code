@@ -173,8 +173,9 @@ omlx_tip1=oMLX ড্যাশবোর্ড: chunked prefill ও prefill memor
 omlx_tip2=আর SSD ক্যাশ চালু রাখুন (docs/gameplan.md, Phase 0.3)।
 measure=আরও কিছু যোগ করার আগে মেপে দেখুন: docs/gameplan.md, Phase 6।
 dry_done=ড্রাই রান শেষ; কিছুই বদলানো হয়নি।
+setup_done=সেটআপ সম্পন্ন হয়েছে।
 # install.sh
-inst_skill=  স্কিল: %s
+inst_skill=স্কিল: %s
 inst_skills_done=স্কিল %s-এ ইনস্টল হয়েছে। pi-তে /skills-global চালালে বেছে নেওয়া স্কিল ~/.pi/agent/skills-এ কপি হবে, যাতে সব প্রজেক্টে ব্যবহার করা যায়।
 inst_agents_same=  %s-এ এজেন্ট নিয়ম ইতিমধ্যে হালনাগাদ
 inst_agents_done=  এজেন্ট নিয়ম (ভাষা, সংক্ষিপ্ত অভ্যন্তরীণ কাজ) %s-এ লেখা হয়েছে

@@ -30,6 +30,9 @@ run() {
   if [[ "${DRY_RUN:-0}" == "1" ]]; then echo "+ $*"; else "$@"; fi
 }
 
+# say KEY [ARG...]: print a message indented two spaces, like setup.sh's output.
+say() { local m; m=$(t "$@"); printf '  %s\n' "${m#"${m%%[! ]*}"}"; }
+
 project_dir() { printf '%s' "${1:-${FABEEE_CODE_PROJECT:-$PWD}}"; }
 
 add_extension() { # add_extension PROJECT FILE
@@ -42,14 +45,16 @@ install_skills() {
   project=$(project_dir "${1:-}")
   target="$project/.pi/skills"
   run mkdir -p "$target"
+  local names=()
   for dir in "$ROOT"/skills/*/; do
     local name; name="$(basename "$dir")"
     run rm -rf "$target/$name"
     run cp -R "$dir" "$target/$name"
-    t inst_skill "$name"; echo
+    names+=("$name")
   done
+  say inst_skill "$(printf '%s, ' "${names[@]}" | sed 's/, $//')"
   add_extension "$project" skills-global.ts
-  t inst_skills_done "$target"; echo
+  say inst_skills_done "$target"
 }
 
 install_context() {
@@ -70,10 +75,10 @@ install_context() {
   fi
   { [[ -s $tmp ]] && { cat "$tmp"; echo; }; echo "$begin"; cat "$ROOT/context/AGENTS.md"; echo "$end"; } > "$tmp.new"
   if [[ -f $target ]] && cmp -s "$tmp.new" "$target"; then
-    t inst_agents_same "$target"; echo
+    say inst_agents_same "$target"
   else
     run cp "$tmp.new" "$target"
-    t inst_agents_done "$target"; echo
+    say inst_agents_done "$target"
   fi
   rm -f "$tmp" "$tmp.new"
   # Makes pi read .pi/AGENTS.md instead of the root AGENTS.md/CLAUDE.md other harnesses use.
@@ -86,20 +91,20 @@ install_models() {
 
 install_extension() {
   add_extension "$(project_dir "${1:-}")" quality-gate.ts
-  t inst_ext_done; echo
+  say inst_ext_done
 }
 
 install_mcp() {
   local file
   file="$(project_dir "${1:-}")/.pi/mcp.json"
   if [[ -e $file ]]; then
-    t inst_mcp_exists "$file"; echo
+    say inst_mcp_exists "$file"
   else
     run mkdir -p "$(dirname "$file")"
     run cp "$ROOT/config/mcp.json" "$file"
-    t inst_mcp_done; echo
+    say inst_mcp_done
   fi
-  command -v probe >/dev/null || { t inst_probe_missing; echo; }
+  command -v probe >/dev/null || say inst_probe_missing
 }
 
 install_packages() {
@@ -107,27 +112,27 @@ install_packages() {
   project=$(project_dir "${2:-}")
   case "$tier" in
     core|tokens|ondemand|tuning|cloud|ab) ;;
-    *) { t inst_pkg_usage "$0"; echo; } >&2; exit 2 ;;
+    *) say inst_pkg_usage "$0" >&2; exit 2 ;;
   esac
   # tier is validated above; eval keeps this working on macOS's bash 3.2 (no namerefs)
   local pkgs; eval "pkgs=(\"\${${tier}[@]}\")"
-  t inst_pkg_warn; echo
+  say inst_pkg_warn
   local failed=()
   for pkg in "${pkgs[@]}"; do
     # .pi/settings.json lists packages as "npm:<name>" or "npm:<name>@<version>"
     if grep -q "\"npm:$pkg[\"@]" "$project/.pi/settings.json" 2>/dev/null; then
-      t inst_pkg_skip "$pkg"; echo
+      say inst_pkg_skip "$pkg"
       continue
     fi
     # -l: declare in .pi/settings.json, download into .pi/npm/. --approve: trust the project for this
     # command only. One failing package (e.g. a native module that won't build) must not stop the rest.
     if ! (cd "$project" && run pi install -l --approve "npm:$pkg"); then
       failed+=("$pkg")
-      t inst_pkg_failed "$pkg"; echo
+      say inst_pkg_failed "$pkg"
     fi
   done
   if [ "${#failed[@]}" -gt 0 ]; then
-    t inst_pkg_failed_hint; echo
+    say inst_pkg_failed_hint
     return 1
   fi
 }

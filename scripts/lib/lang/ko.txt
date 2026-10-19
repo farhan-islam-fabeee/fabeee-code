@@ -173,8 +173,9 @@ omlx_tip1=oMLX 대시보드: chunked prefill과 prefill memory guard를 켜고, 
 omlx_tip2=SSD 캐시는 켜 두세요 (docs/gameplan.md, Phase 0.3).
 measure=더 추가하기 전에 측정하세요: docs/gameplan.md, Phase 6.
 dry_done=드라이 런이 끝났습니다. 아무것도 변경하지 않았습니다.
+setup_done=설정이 끝났습니다.
 # install.sh
-inst_skill=  스킬: %s
+inst_skill=스킬: %s
 inst_skills_done=스킬을 %s에 설치했습니다. pi에서 /skills-global을 실행하면 선택한 스킬을 ~/.pi/agent/skills에 복사해 모든 프로젝트에서 쓸 수 있습니다.
 inst_agents_same=  %s의 에이전트 규칙이 이미 최신입니다
 inst_agents_done=  에이전트 규칙(언어, 간결한 내부 작업)을 %s에 썼습니다
