@@ -15,7 +15,7 @@ Write `.pi/handoff.md` in **40 lines or fewer**:
 ## Dead ends       (what was tried and why it failed, so nobody redoes it)
 ```
 
-Then tell the user in one line: *"Handoff saved. Start a new session (`/new`) and run `/skill:resume`."*
+Then tell the user in one line, in your reply language, that the handoff is saved and they should start a new session (`/new`) and run `/skill:resume`.
 
 If the user would rather stay in this session, suggest this instead:
 `/compact Keep: goal, decisions, next steps, file:line refs. Drop: tool output, file contents, resolved errors.`

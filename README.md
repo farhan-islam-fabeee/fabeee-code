@@ -10,7 +10,7 @@ It was tuned for pi 1.2.0, an M5 Pro with 24 GB, and oMLX serving `Qwen3.8-27B-4
 docs/gameplan.md            the full plan: phases 0–7, rationale, rollout checklist
 docs/research.md            package and MCP findings (adopted / A-B / rejected), cache pricing, open questions
 skills/                     8 token- and compaction-saving skills (Agent Skills format)
-context/AGENTS.md           global rules installed with the skills: English for repo artifacts and replies, terse English internally
+context/AGENTS.md           global rules installed with the skills: Japanese for comments, docs and replies; terse English internally
 skills-ja/                  Japanese translations, kept for reference (they cost 13–71% more tokens depending on the model; see docs/research.md)
 config/models.local.json    oMLX provider: context window matched to the server, sampling per thinking level
 config/settings.json        pi settings: low thinking, codemode, compaction sized for 32k

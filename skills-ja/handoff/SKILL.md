@@ -15,7 +15,7 @@ description: 情報が失われやすい圧縮の代わりに新しいセッシ�
 ## Dead ends       (what was tried and why it failed, so nobody redoes it)
 ```
 
-そのあと、ユーザーに1行で伝える: *「引き継ぎを保存しました。新しいセッション(`/new`)を開始し、`/skill:resume` を実行してください。」*
+そのあと、引き継ぎを保存したことと、新しいセッション(`/new`)を開始して `/skill:resume` を実行すべきことを、返答の言語で1行でユーザーに伝える。
 
 ユーザーがこのセッションに留まりたい場合は、代わりに次を提案する:
 `/compact Keep: goal, decisions, next steps, file:line refs. Drop: tool output, file contents, resolved errors.`
