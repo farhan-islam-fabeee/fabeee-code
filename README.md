@@ -9,6 +9,7 @@ pi 1.2.0、M5 Pro（24 GB）、`Qwen3.8-27B-4bit` を動かす oMLX の環境で
 ## 構成
 
 ```
+bootstrap.sh                1 行インストールの入口: キットを ~/.fabeee-code に取得・更新し、現在のフォルダーで setup.sh を実行
 docs/gameplan.md            計画の全体: Phase 0〜7、各判断の理由、導入チェックリスト
 docs/research.md            パッケージと MCP の調査結果（採用・A/B テスト・不採用）、キャッシュ料金、未検証の点
 skills/                     トークンと圧縮を節約する 8 つのスキル（Agent Skills 形式）
@@ -29,15 +30,25 @@ scripts/count_tokens.py     skills/ と skills-ja/ のトークン数を複数�
 
 ## クイックスタート
 
-作業したいプロジェクトのフォルダーで、対話式セットアップを実行します。
+作業したいプロジェクトのフォルダーで、次の 1 行を実行します。
 
 ```bash
-cd ~/path/to/your-project
+curl -fsSL https://raw.githubusercontent.com/farhan-islam-fabeee/fabeee-code/main/bootstrap.sh | bash
+```
+
+キットを `~/.fabeee-code` にダウンロードし（2 回目以降は更新）、現在のフォルダーで対話式セットアップを開始します。セットアップのオプションは `bash -s --` のあとに付けます。例: `curl -fsSL … | bash -s -- --lang=ja --dry-run`。`FABEEE_CODE_HOME` でキットの保存先を、`FABEEE_CODE_REF` でブランチやタグを指定できます。
+
+実行前にスクリプトの中身を確認したい場合:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/farhan-islam-fabeee/fabeee-code/main/bootstrap.sh -o bootstrap.sh
 ```
 
 ```bash
-~/Development/fabeee-code/scripts/setup.sh
+less bootstrap.sh && bash bootstrap.sh
 ```
+
+リポジトリをクローン済みなら、プロジェクトのフォルダーから `scripts/setup.sh` を直接実行することもできます。
 
 最初に表示言語（English、日本語、한국어、বাংলা）を尋ねます。既定値はシステムのロケールで決まり、`--lang=ja`（または `FABEEE_CODE_LANG=ja`）を指定すると質問を省略できます。そのあと 7 つのステップを順に進め、変更の前には毎回確認します。
 

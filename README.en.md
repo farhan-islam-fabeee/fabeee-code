@@ -9,6 +9,7 @@ It was tuned for pi 1.2.0, an M5 Pro with 24 GB, and oMLX serving `Qwen3.8-27B-4
 ## Layout
 
 ```
+bootstrap.sh                one-liner entry point: downloads/updates the kit in ~/.fabeee-code, then runs setup.sh here
 docs/gameplan.md            the full plan: phases 0–7, rationale, rollout checklist
 docs/research.md            package and MCP findings (adopted / A-B / rejected), cache pricing, open questions
 skills/                     8 token- and compaction-saving skills (Agent Skills format)
@@ -29,15 +30,25 @@ scripts/count_tokens.py     compares token counts of skills/ vs skills-ja/ acros
 
 ## Quick start
 
-Run the guided setup from inside the project you want to work on:
+Run this one-liner from inside the project you want to work on:
 
 ```bash
-cd ~/path/to/your-project
+curl -fsSL https://raw.githubusercontent.com/farhan-islam-fabeee/fabeee-code/main/bootstrap.sh | bash
+```
+
+It downloads the kit to `~/.fabeee-code` (or updates it on later runs), then starts the guided setup in the current folder. Pass setup options after `bash -s --`, for example `curl -fsSL … | bash -s -- --lang=ja --dry-run`. `FABEEE_CODE_HOME` changes where the kit is kept, and `FABEEE_CODE_REF` pins a branch or tag.
+
+To read the script before running it:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/farhan-islam-fabeee/fabeee-code/main/bootstrap.sh -o bootstrap.sh
 ```
 
 ```bash
-~/Development/fabeee-code/scripts/setup.sh
+less bootstrap.sh && bash bootstrap.sh
 ```
+
+If you've cloned the repo, you can also run `scripts/setup.sh` from your project folder directly.
 
 It first asks for a display language: English, 日本語, 한국어 or বাংলা. Your system locale sets the default, and `--lang=ja` (or `FABEEE_CODE_LANG=ja`) skips the question. Then it walks through 7 steps and asks before each change:
 
