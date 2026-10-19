@@ -169,7 +169,7 @@ Selection rule for a local 27B: **no extra LLM calls** (each one is a slow local
 - **`billion-context`**: a proxy that replaces old message ranges with summaries, and the main model decides when to compress. On a local 27B, that means extra slow model turns, and the rewritten history invalidates oMLX's prefix cache. The `handoff` skill (Phase 3) gets most of the benefit for free.
 - **`pi-rtk`** (mcowger): unpublished from npm in September 2026. Don't run two output filters at once in any case.
 - **`context-mode`** isn't skipped: it's an optional A/B alternative in Phase 4. It keeps tool output out of context rather than rewriting history.
-- **`pi-web-access`**: only add it if you actually need web research. Context7 (Phase 4) covers library docs.
+- **`pi-web-access`**: only add it if you actually need web research. Context (Phase 4) covers library docs.
 
 ### Phase 2b: one small custom extension, a quality gate
 
@@ -230,7 +230,7 @@ These target the four places tokens go: **reading code, command output, multi-st
 | [`project-map`](../skills/project-map/SKILL.md) | Keeping a `.pi/MAP.md` of 60 lines or fewer (commands, layout, entry points, conventions, gotchas), so new sessions skip re-exploring. | auto |
 | [`handoff`](../skills/handoff/SKILL.md) | Writing a `.pi/handoff.md` of 40 lines or fewer (goal, done, decisions, next steps, refs, dead ends) and moving to a **fresh session** instead of compacting. Its fallback is a focused `/compact Keep: … Drop: …`. | auto |
 | [`resume`](../skills/resume/SKILL.md) | Starting a new session from the handoff file and map only. | `/skill:resume` only |
-| [`docs-lookup`](../skills/docs-lookup/SKILL.md) | Querying Context7 for one narrow topic at about 2000 tokens, then caching what it relies on in `.pi/notes/<lib>.md` so it never fetches the same docs twice. | auto |
+| [`docs-lookup`](../skills/docs-lookup/SKILL.md) | Querying local docs (Context) for one narrow topic, DeepWiki only as a fallback, then caching what it relies on in `.pi/notes/<lib>.md` so it never looks up the same thing twice. | auto |
 
 **Why handoff beats compaction on a local model:** pi's compaction makes the *main model* summarize the old messages. On a 27B at 32k, that's a long, slow turn. Repeated compactions also re-summarize earlier summaries, so detail is lost each time. A handoff file is written once, is exact, and a fresh session restarts from about 1.5k tokens.
 
@@ -276,7 +276,8 @@ pi registers each MCP tool as `mcp__<server>__<tool>`. The **default exposure is
 | Server | Why it speeds things up | Exposure |
 |---|---|---|
 | **Probe** (local AST-aware code search) | Works like `rg`, but each hit is a **whole function or class** (tree-sitter), with hard token caps (`maxTokens`, `PROBE_MAX_TOKENS`), a `filesOnly` mode, and `session` dedupe across calls. `extract_code file:line` pulls one block instead of a whole file. It's fully local, with no embeddings or index to build. This is the main input-token saver, used by the `lean-read` skill. | `search_code` + `extract_code` `direct`; `query_code` deferred |
-| **Context7** (library docs) | A local model's knowledge is older and smaller than a frontier model's. Fetching the real API docs beats three rounds of hallucinate, fail, retry. | `direct` (only 2 tools) |
+| **Context** ([Neuledge Context](https://github.com/neuledge/context), library docs) | A local model's knowledge is older and smaller than a frontier model's. Fetching the real API docs beats three rounds of hallucinate, fail, retry. Free and Apache-2.0, with no rate limits: each library's docs download once as a SQLite file and are searched locally, with results trimmed to a token budget. Replaced Context7, whose free tier is now metered. | `direct` (3 tools) |
+| **DeepWiki** (optional backup) | Free, keyless docs and Q&A for any public GitHub repo, for libraries the Context registry lacks. Answers can be long. | `deferred` |
 | **Serena** (LSP semantic code tools), *optional* | Symbol-level read/replace (`find_symbol`, `replace_symbol_body`) instead of reading whole files. Worth it on **large repos**. It overlaps with pi-lens's navigation tools, so add it only if pi-lens isn't enough. | `deferred` |
 | **Playwright MCP**, *frontend projects only* | Lets the agent check its UI changes itself instead of you doing it. | `deferred`, project-level |
 
@@ -299,10 +300,16 @@ Then use [`config/mcp.json`](../config/mcp.json) as `~/.pi/agent/mcp.json` (`scr
       "toolExposure": { "search_code": "direct", "extract_code": "direct" },
       "description": "Local AST-aware code search that returns whole functions and classes, with token caps"
     },
-    "context7": {
-      "url": "https://mcp.context7.com/mcp",
+    "context": {
+      "command": "context",
+      "args": ["serve"],
       "exposure": "direct",
-      "description": "Up-to-date library and framework docs"
+      "description": "Local library docs (Neuledge Context): search_packages, download_package, get_docs"
+    },
+    "deepwiki": {
+      "url": "https://mcp.deepwiki.com/mcp",
+      "exposure": "deferred",
+      "description": "Docs and Q&A for public GitHub repos (DeepWiki), for libraries the local docs don't cover"
     }
   }
 }
@@ -453,7 +460,7 @@ Merge this into `~/.pi/agent/models.json` next to `omlx` (full file: [`config/mo
 - [ ] Tier D: pi-vcc, pi-prefix-stabilizer, pi-caveman (lite), pi-context-view while tuning; A/B pi-hashline-edit-pro
 - [ ] Token skills: copy `skills/` → `<project>/.pi/skills/` (lean-read, quiet-shell, batch-tools, delegate-scout, project-map, handoff, resume, docs-lookup); `/skills-global` copies any you want everywhere to `~/.pi/agent/skills/`
 - [ ] Quality skills: verify, bugfix-tdd, self-review, commit + per-project AGENTS.md
-- [ ] MCP: Probe (global install, direct search/extract) + Context7 (direct) via `config/mcp.json`; Serena only for large repos; Playwright only for frontend
+- [ ] MCP: Probe (direct search/extract) + Context (direct, `npm i -g @neuledge/context`) + optional DeepWiki (deferred) via `config/mcp.json`; Serena only for large repos; Playwright only for frontend
 - [ ] Per project: run `project-map` once; add `.pi/handoff.md` to `.gitignore`
 - [ ] Optional A/B: context-mode instead of pi-rtk-optimizer on log- or browser-heavy projects (it uses native `better-sqlite3` 12.x, so check it installs on your Node version first)
 - [ ] Tier B: plan-mode, pi-simplify, pi-subagents (concurrency 2, watchdog off)

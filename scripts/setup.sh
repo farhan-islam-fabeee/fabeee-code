@@ -246,6 +246,15 @@ ensure_rtk() {
   else warn "$(t rtk_wrong)"; fi
 }
 
+# ---------- context (Neuledge Context, local library docs for the MCP server) ----------
+# Per-machine program, like probe. MacTeX also ships a `context` (ConTeXt); the right one has `serve`.
+ensure_context() {
+  if command -v context >/dev/null 2>&1 && context --help 2>&1 | grep -qi serve; then return; fi
+  command -v context >/dev/null 2>&1 && warn "$(t context_wrong)"
+  if confirm "$(t context_install_q)" y; then run npm install -g @neuledge/context || warn "$(t context_later)"
+  else warn "$(t context_later)"; fi
+}
+
 # ---------- existing project setup: only prepare this machine ----------
 # A teammate cloned a project that is already set up. Everything shared is in the repo; what each
 # person still needs is pi (step 2), their own API keys and the probe binary.
@@ -268,6 +277,7 @@ machine_setup() {
   def=$(cfg json-get "$SETTINGS" defaultProvider 2>/dev/null || true)
   if [[ -n $def ]] && ! cfg has-provider "$MODELS" "$def" 2>/dev/null; then info "$(t builtin_key_hint "$def" "$def")"; fi
   grep -qs 'pi-rtk-optimizer' "$SETTINGS" && ensure_rtk
+  grep -qs '"context"' "$PI_PROJECT/mcp.json" && ensure_context
   if grep -qs '"probe"' "$PI_PROJECT/mcp.json" && ! command -v probe >/dev/null 2>&1; then
     confirm "$(t probe_install_q)" y && run npm install -g @probelabs/probe@latest
   fi
@@ -453,7 +463,8 @@ if confirm "$(t probe_q)" y; then
     else warn "$(t probe_later)"; fi
   fi
 fi
-confirm "$(t context7_q)" y && servers+=(context7)
+if confirm "$(t context_q)" y; then servers+=(context); ensure_context; fi
+confirm "$(t deepwiki_q)" n && servers+=(deepwiki)
 if [ "${#servers[@]}" -gt 0 ]; then cfg merge-mcp "$PI_PROJECT/mcp.json" "$KIT/config/mcp.json" "${servers[@]}"; fi
 
 # ---------- 6. packages ----------

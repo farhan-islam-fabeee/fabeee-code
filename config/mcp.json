@@ -11,10 +11,16 @@
       },
       "description": "Local AST-aware code search that returns whole functions and classes, with token caps"
     },
-    "context7": {
-      "url": "https://mcp.context7.com/mcp",
+    "context": {
+      "command": "context",
+      "args": ["serve"],
       "exposure": "direct",
-      "description": "Up-to-date library and framework docs"
+      "description": "Local library docs (Neuledge Context): search_packages, download_package, get_docs"
+    },
+    "deepwiki": {
+      "url": "https://mcp.deepwiki.com/mcp",
+      "exposure": "deferred",
+      "description": "Docs and Q&A for public GitHub repos (DeepWiki), for libraries the local docs don't cover"
     }
   }
 }

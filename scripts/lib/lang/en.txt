@@ -131,7 +131,11 @@ mcp_title=MCP servers:
 probe_q=  Probe: local code search that returns whole functions (runs on your machine)?
 probe_install_q=  Probe isn't installed. Run npm install -g @probelabs/probe@latest?
 probe_later=  Install it later, or pi will report probe as disconnected.
-context7_q=  Context7: up-to-date library docs (remote; sends library names and queries to context7.com)?
+context_q=  Context: local library docs, free (Neuledge Context; downloads a library's docs once, then works offline)?
+deepwiki_q=  DeepWiki: free docs and Q&A for public GitHub repos, as a backup (remote; sends repo names and questions to deepwiki.com)?
+context_install_q=  The context program isn't installed. Run npm install -g @neuledge/context?
+context_later=  Install it later with: npm install -g @neuledge/context (until then pi reports the context server as disconnected)
+context_wrong=  The context on PATH is a different program (likely ConTeXt from MacTeX); the docs server needs @neuledge/context first on PATH.
 # 6. packages
 step_packages=6/7 pi packages (this project)
 packages_warn=Packages run code with your permissions. Review them at https://pi.dev/packages/<name> first.

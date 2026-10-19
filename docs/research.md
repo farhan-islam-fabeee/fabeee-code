@@ -62,7 +62,10 @@ These findings come from pi's docs and pi.dev package pages, read between 2026-1
 | Server | Decision | Notes |
 |---|---|---|
 | [Probe](https://probelabs.com/mcp-integration) | Adopted | Local tree-sitter search that returns whole code blocks. Supports `maxTokens`, `filesOnly` and `session` dedupe. Install it globally rather than through npx. |
-| Context7 | Adopted | Library docs at `https://mcp.context7.com/mcp` |
+| [Neuledge Context](https://github.com/neuledge/context) | Adopted (replaced Context7, 2026-10-20) | Free, Apache-2.0, no rate limits. Local MCP server (`context serve`) with tools `search_packages`, `download_package` and `get_docs`; each library's docs download once as SQLite and are searched locally with a token budget. Program: `npm i -g @neuledge/context` (MacTeX's ConTeXt is also called `context`). |
+| [DeepWiki](https://docs.devin.ai/work-with-devin/deepwiki-mcp) | Optional backup | Free, keyless remote MCP (`https://mcp.deepwiki.com/mcp`) for public GitHub repos: `read_wiki_structure`, `read_wiki_contents`, `ask_question`. Deferred, because answers can be long. |
+| Context7 | Dropped | Free tier is now metered (about 1,000 requests a month, or 60 an hour, depending on the source); Pro is $7–10 per seat per month. |
+| [GitMCP](https://github.com/idosal/git-mcp) | Not adopted | Free. The generic `gitmcp.io/docs` endpoint works for many repos, but it reads the latest docs only (no version selection) and the model must name the right `owner/repo` each call. |
 | [Serena](https://github.com/oraios/serena) | Large repos only | Symbol-level reads and edits. Overlaps pi-lens. |
 | Playwright MCP | Frontend projects only | Set `deferred` exposure in the project config |
 | Filesystem, GitHub, memory MCPs | Rejected | They duplicate built-ins or `gh`, or bloat the prompt |

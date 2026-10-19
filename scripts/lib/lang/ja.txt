@@ -131,7 +131,11 @@ mcp_title=MCP サーバー:
 probe_q=  Probe（関数単位で結果を返すローカルのコード検索。お使いのマシン上で動作）を追加しますか？
 probe_install_q=  Probe がインストールされていません。npm install -g @probelabs/probe@latest を実行しますか？
 probe_later=  あとでインストールしてください。それまで pi は probe を未接続と表示します。
-context7_q=  Context7（最新のライブラリドキュメント。リモートで、ライブラリ名と検索内容を context7.com に送信）を追加しますか？
+context_q=  Context（無料のローカルなライブラリドキュメント。Neuledge Context。ライブラリのドキュメントを1回ダウンロードし、以降はオフラインで動作）を追加しますか？
+deepwiki_q=  DeepWiki（公開 GitHub リポジトリの無料ドキュメントと Q&A。予備用。リモートで、リポジトリ名と質問を deepwiki.com に送信）を追加しますか？
+context_install_q=  context コマンドがインストールされていません。npm install -g @neuledge/context を実行しますか？
+context_later=  あとで npm install -g @neuledge/context でインストールしてください（それまで pi は context サーバーを未接続と表示します）
+context_wrong=  PATH にある context は別のプログラムです（MacTeX の ConTeXt の可能性）。ドキュメントサーバーには @neuledge/context が PATH の先頭に必要です。
 # 6. packages
 step_packages=6/7 pi パッケージ（このプロジェクト）
 packages_warn=パッケージはあなたの権限でコードを実行します。先に https://pi.dev/packages/<name> で内容を確認してください。

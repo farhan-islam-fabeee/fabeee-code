@@ -131,7 +131,11 @@ mcp_title=MCP সার্ভার:
 probe_q=  Probe (পুরো ফাংশন ফেরত দেয় এমন লোকাল কোড সার্চ, আপনার মেশিনেই চলে) যোগ করবেন?
 probe_install_q=  Probe ইনস্টল করা নেই। npm install -g @probelabs/probe@latest চালাবেন?
 probe_later=  পরে ইনস্টল করুন; তার আগ পর্যন্ত pi probe-কে সংযোগবিচ্ছিন্ন দেখাবে।
-context7_q=  Context7 (হালনাগাদ লাইব্রেরি ডকুমেন্টেশন; রিমোট, লাইব্রেরির নাম ও প্রশ্ন context7.com-এ পাঠায়) যোগ করবেন?
+context_q=  Context (বিনামূল্যে লোকাল লাইব্রেরি ডকুমেন্টেশন, Neuledge Context; একবার ডাউনলোডের পর অফলাইনে চলে) যোগ করবেন?
+deepwiki_q=  DeepWiki (পাবলিক GitHub রিপোর জন্য বিনামূল্যে ডকুমেন্টেশন ও প্রশ্নোত্তর, ব্যাকআপ হিসেবে; রিমোট, রিপোর নাম ও প্রশ্ন deepwiki.com-এ পাঠায়) যোগ করবেন?
+context_install_q=  context প্রোগ্রাম ইনস্টল করা নেই। npm install -g @neuledge/context চালাবেন?
+context_later=  পরে npm install -g @neuledge/context দিয়ে ইনস্টল করুন (তার আগ পর্যন্ত pi context সার্ভারকে সংযোগবিচ্ছিন্ন দেখাবে)
+context_wrong=  PATH-এ থাকা context অন্য একটি প্রোগ্রাম (সম্ভবত MacTeX-এর ConTeXt); ডকুমেন্টেশন সার্ভারের জন্য PATH-এর শুরুতে @neuledge/context দরকার।
 # 6. packages
 step_packages=6/7 pi প্যাকেজ (এই প্রজেক্ট)
 packages_warn=প্যাকেজগুলো আপনার অনুমতিতে কোড চালায়। আগে https://pi.dev/packages/<name>-এ সেগুলো দেখে নিন।

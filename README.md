@@ -17,7 +17,7 @@ context/AGENTS.md           プロジェクトの AGENTS.md に追加するエ�
 skills-ja/                  スキルの日本語訳（参照用。モデルによってトークンが 13〜71% 増えます。docs/research.md を参照）
 config/models.local.example.json  ローカルの OpenAI 互換サーバー（oMLX、Ollama、LM Studio など）用のテンプレート
 config/settings.json        pi の設定: 思考レベル低め、codemode、32k 向けの圧縮設定
-config/mcp.json             Probe（ローカルのコード検索）と Context7（ドキュメント）
+config/mcp.json             Probe（ローカルのコード検索）、Context（ローカルのライブラリドキュメント）、DeepWiki（任意）
 config/models.cloud.example.json  OpenAI 互換クラウドプロバイダー用のテンプレート
 extensions/quality-gate.ts  エージェントの作業終了時にプロジェクトの高速チェックを実行し、失敗を差し戻す
 extensions/skills-global.ts pi の /skills-global コマンド: 選んだプロジェクトのスキルを ~/.pi/agent/skills にコピー
@@ -61,7 +61,7 @@ less bootstrap.sh && bash bootstrap.sh
 |---|---|
 | `.pi/models.json`: モデルのプロバイダー。`.pi/extensions/project-models.ts` が読み込みます | API キー: macOS キーチェーン、環境変数、または pi の `/login`。`.pi/models.json` には `${VAR}` や `!security …` のような参照だけを書きます |
 | `.pi/settings.json`: デフォルトのモデル、思考レベル、codemode、圧縮、パッケージ | pi 本体 |
-| `.pi/mcp.json`: Probe と Context7 | `probe` と `rtk` コマンド（`pi-rtk-optimizer` を使う場合、セットアップが Homebrew で `rtk` をインストール） |
+| `.pi/mcp.json`: Probe、Context、任意で DeepWiki | `probe`、`context`、`rtk` コマンド（必要なものはセットアップがインストールを提案） |
 | `.pi/extensions/`: 品質ゲート、`/skills-global`、`.pi/AGENTS.md` の読み込み、プロバイダー読み込み | `.pi/npm/`（ダウンロードしたパッケージ）と `.pi/handoff.md`。どちらも `.gitignore` に追加します |
 | `.pi/skills/`、`.pi/AGENTS.md`、`.pi/check` | |
 
@@ -78,7 +78,7 @@ pi はプロジェクトを信頼したあとでのみ `.pi/` を読み込みま
    - **クラウド:** OpenRouter、DeepSeek、Z.ai、Moonshot、pi に組み込まれたその他のプロバイダー、または料金とキャッシュ保持時間を指定したカスタムの OpenAI 互換エンドポイント。
    - **API キー:** macOS キーチェーン（pi がリクエストごとに `security` で読み取ります）、環境変数、または pi の `/login`。ファイルを共有するため、平文で保存する選択肢はありません。
 4. **設定:** `.pi/settings.json`（思考レベルは低め、codemode、ローカルのウィンドウに合わせた圧縮）を、プロジェクトのデフォルトのモデルと一緒に書き込みます。
-5. **キット:** スキルを `.pi/skills/` に、`/skills-global` コマンドと品質ゲートを、MCP サーバーの Probe と Context7 を `.pi/mcp.json` にインストールします。
+5. **キット:** スキルを `.pi/skills/` に、`/skills-global` コマンドと品質ゲートを、MCP サーバーを `.pi/mcp.json` に設定します: Probe、Context（[Neuledge Context](https://github.com/neuledge/context) による無料のローカルなライブラリドキュメント）、任意で DeepWiki（公開 GitHub リポジトリの無料ドキュメント）。
 6. **パッケージ:** パッケージ群ごとに確認し、`pi install -l` でインストールします（`.pi/settings.json` に記録されます）。パッケージはコードを実行するため、それぞれ事前に確認します。
 7. **プロジェクトファイル:** git、`.pi/check`（package.json、Cargo、Go、Python から自動検出）、ひな形の `.pi/AGENTS.md`（なければ）、`.pi/AGENTS.md` へのエージェントルールのセクション（再実行時はそのセクションだけを置き換え、ほかの内容はそのまま）、`.gitignore` を用意します。pi はルートの `AGENTS.md`/`CLAUDE.md`（ほかのツールが使うファイル）の代わりに `.pi/AGENTS.md` を読みます。セットアップはそれらのファイルを変更しません。
 
@@ -99,7 +99,7 @@ pi はプロジェクトを信頼したあとでのみ `.pi/` を読み込みま
 | [project-map](skills/project-map/SKILL.md) | 60 行以内の `.pi/MAP.md` を保ち、新しいセッションで再探索しなくて済むようにする |
 | [handoff](skills/handoff/SKILL.md) | 状態を `.pi/handoff.md` に保存し、圧縮の代わりに新しいセッションで続ける |
 | [resume](skills/resume/SKILL.md) | 引き継ぎファイルとマップからセッションを再開する（`/skill:resume`） |
-| [docs-lookup](skills/docs-lookup/SKILL.md) | Context7 に狭く問い合わせ、答えを `.pi/notes/` に保存して使い回す |
+| [docs-lookup](skills/docs-lookup/SKILL.md) | ローカルのドキュメント（Context）にトピックを絞って問い合わせ、予備に DeepWiki を使い、答えを `.pi/notes/` に保存して使い回す |
 
 ## 現状
 
