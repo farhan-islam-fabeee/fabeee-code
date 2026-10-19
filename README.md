@@ -13,7 +13,7 @@ bootstrap.sh                1 行インストールの入口: キットを ~/.fa
 docs/gameplan.md            計画の全体: Phase 0〜7、各判断の理由、導入チェックリスト
 docs/research.md            パッケージと MCP の調査結果（採用・A/B テスト・不採用）、キャッシュ料金、未検証の点
 skills/                     トークンと圧縮を節約する 8 つのスキル（Agent Skills 形式）
-context/AGENTS.md           スキルと一緒にインストールするグローバルルール: コメント・ドキュメント・応答は日本語、内部作業は簡潔な英語
+context/AGENTS.md           プロジェクトの AGENTS.md に追加するエージェントルール: コメント・ドキュメント・応答は日本語、内部作業は簡潔な英語
 skills-ja/                  スキルの日本語訳（参照用。モデルによってトークンが 13〜71% 増えます。docs/research.md を参照）
 config/models.local.json    oMLX プロバイダー: コンテキストウィンドウをサーバーに合わせ、思考レベルごとにサンプリングを設定
 config/settings.json        pi の設定: 思考レベル低め、codemode、32k 向けの圧縮設定
@@ -60,13 +60,13 @@ less bootstrap.sh && bash bootstrap.sh
    - **クラウド:** OpenRouter、DeepSeek、Z.ai、Moonshot、pi に組み込まれたその他のプロバイダー、または料金とキャッシュ保持時間を指定したカスタムの OpenAI 互換エンドポイント。
    - **API キー:** macOS キーチェーン（pi がリクエストごとに `security` で読み取ります）、環境変数、pi の `/login`、ローカルサーバーの場合のみ平文、から保存先を選べます。
 4. **設定:** pi の設定（思考レベルは低め、codemode、ローカルのウィンドウに合わせた圧縮）を書き込み、デフォルトのモデル（全体またはこのプロジェクトのみ）を設定します。シェルのエイリアス `pil`/`pic` も追加できます。
-5. **キット:** スキルを**このプロジェクトに**（`.agents/skills/`）インストールし、グローバルの `AGENTS.md`、`/skills-global` コマンド、品質ゲート、MCP サーバーの Probe と Context7 もインストールします。
+5. **キット:** スキルを**このプロジェクトに**（`.agents/skills/`）インストールし、`/skills-global` コマンド、品質ゲート、MCP サーバーの Probe と Context7 もインストールします。
 6. **パッケージ:** パッケージ群ごとに確認しながらインストールします。パッケージはコードを実行するため、それぞれ事前に確認します。
-7. **プロジェクトファイル:** git、`.pi/check`（package.json、Cargo、Go、Python から自動検出）、ひな形の `AGENTS.md`、`.gitignore` を用意します。
+7. **プロジェクトファイル:** git、`.pi/check`（package.json、Cargo、Go、Python から自動検出）、ひな形の `AGENTS.md`（なければ）、プロジェクトの `AGENTS.md` へのエージェントルールのセクション（再実行時はそのセクションだけを置き換え、ほかの内容はそのまま）、`.gitignore` を用意します。
 
 変更する pi の設定ファイルは、事前にすべてバックアップします（`<file>.backup-<timestamp>`）。何度実行しても安全です。`--dry-run` を付けると、同じ質問をしたうえで何も書き込みません。
 
-手動で個別にインストールする場合は、`./scripts/install.sh all <project>` で指定したプロジェクトへのスキル、`AGENTS.md`、拡張機能、MCP 設定を、`./scripts/install.sh packages <tier>` でパッケージ群を 1 つ（`core`、`tokens`、`ondemand`、`tuning`、`cloud`、`ab`）インストールします。[config/models.local.json](config/models.local.json) と [config/settings.json](config/settings.json) は、ご自身で `~/.pi/agent/` に統合してください（gameplan の Phase 0〜1）。
+手動で個別にインストールする場合は、`./scripts/install.sh all <project>` で指定したプロジェクトへのスキルとエージェントルール、拡張機能、MCP 設定を、`./scripts/install.sh packages <tier>` でパッケージ群を 1 つ（`core`、`tokens`、`ondemand`、`tuning`、`cloud`、`ab`）インストールします。[config/models.local.json](config/models.local.json) と [config/settings.json](config/settings.json) は、ご自身で `~/.pi/agent/` に統合してください（gameplan の Phase 0〜1）。
 
 ## スキル
 

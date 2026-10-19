@@ -117,7 +117,7 @@ aliases_q=シェルのエイリアスを追加しますか（pil = ローカル�
 aliases_dry=%s への書き込み:
 aliases_added=%s にエイリアスを追加しました（新しいターミナルで使えます）。
 # 5. kit
-step_kit=5/7 スキル、ルール、品質ゲート
+step_kit=5/7 スキル、品質ゲート、MCP
 gate_q=品質ゲート拡張機能をインストールしますか（エージェントの作業終了時に .pi/check を再実行します）？
 mcp_title=MCP サーバー:
 probe_q=  Probe（関数単位で結果を返すローカルのコード検索。お使いのマシン上で動作）を追加しますか？
@@ -146,7 +146,7 @@ check_written=.pi/check: %s
 agents_q=このプロジェクト用のひな形 AGENTS.md を作成しますか（短い英語、検出したコマンド入り）？
 agents_dry=AGENTS.md への書き込み:
 agents_created=AGENTS.md を作成しました。TODO の行を埋めてください。
-agents_exists=このプロジェクトにはすでに AGENTS.md か CLAUDE.md があります。そのままにします。
+agents_exists=このプロジェクトにはすでに AGENTS.md か CLAUDE.md があります。内容はそのまま残します。
 gitignore_dry=.gitignore に .pi/handoff.md を追加
 gitignore_added=.gitignore: .pi/handoff.md を追加しました
 # summary
@@ -172,9 +172,8 @@ dry_done=ドライランが完了しました。何も変更していません�
 inst_backed_up=  %s をバックアップしました -> %s/
 inst_skill=  スキル: %s
 inst_skills_done=スキルを %s にインストールしました。pi で /skills-global を実行すると、選んだスキルを ~/.agents/skills にコピーして全プロジェクトで使えます。
-inst_agents_same=  AGENTS.md はすでに最新です
-inst_agents_backup=  既存の AGENTS.md をバックアップしました -> %s（残したいルールは統合してください）
-inst_agents_done=  グローバルルール: %s
+inst_agents_same=  %s のエージェントルールはすでに最新です
+inst_agents_done=  エージェントルール（言語、簡潔な内部作業）を %s に書き込みました
 inst_ext_done=拡張機能をインストールしました。プロジェクトごとに <project>/.pi/check に1行の高速チェックを書くと有効になります。
 inst_mcp_exists=%s はすでに存在するため上書きしません。config/mcp.json の内容を手動で統合してください。
 inst_mcp_done=MCP 設定をインストールしました。

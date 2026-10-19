@@ -117,7 +117,7 @@ aliases_q=셸 별칭을 추가할까요 (pil = 로컬, pic = 클라우드)?
 aliases_dry=%s에 쓸 내용:
 aliases_added=%s에 별칭을 추가했습니다 (새 터미널에서 사용할 수 있습니다).
 # 5. kit
-step_kit=5/7 스킬, 규칙, 품질 게이트
+step_kit=5/7 스킬, 품질 게이트, MCP
 gate_q=품질 게이트 확장을 설치할까요 (에이전트가 작업을 마치면 .pi/check를 다시 실행)?
 mcp_title=MCP 서버:
 probe_q=  Probe (함수 단위로 결과를 돌려주는 로컬 코드 검색, 내 컴퓨터에서 실행)를 추가할까요?
@@ -146,7 +146,7 @@ check_written=.pi/check: %s
 agents_q=이 프로젝트용 기본 AGENTS.md를 만들까요 (짧은 영어, 감지된 명령 포함)?
 agents_dry=AGENTS.md에 쓸 내용:
 agents_created=AGENTS.md를 만들었습니다. TODO 줄을 채우세요.
-agents_exists=프로젝트에 이미 AGENTS.md 또는 CLAUDE.md가 있어 그대로 둡니다.
+agents_exists=프로젝트에 이미 AGENTS.md 또는 CLAUDE.md가 있습니다. 기존 내용은 그대로 둡니다.
 gitignore_dry=.gitignore에 .pi/handoff.md 추가
 gitignore_added=.gitignore: .pi/handoff.md를 추가했습니다
 # summary
@@ -172,9 +172,8 @@ dry_done=드라이 런이 끝났습니다. 아무것도 변경하지 않았습�
 inst_backed_up=  %s 백업 -> %s/
 inst_skill=  스킬: %s
 inst_skills_done=스킬을 %s에 설치했습니다. pi에서 /skills-global을 실행하면 선택한 스킬을 ~/.agents/skills에 복사해 모든 프로젝트에서 쓸 수 있습니다.
-inst_agents_same=  AGENTS.md가 이미 최신입니다
-inst_agents_backup=  기존 AGENTS.md 백업 -> %s (유지하려는 규칙은 병합하세요)
-inst_agents_done=  전역 규칙: %s
+inst_agents_same=  %s의 에이전트 규칙이 이미 최신입니다
+inst_agents_done=  에이전트 규칙(언어, 간결한 내부 작업)을 %s에 썼습니다
 inst_ext_done=확장을 설치했습니다. 프로젝트마다 <project>/.pi/check에 한 줄짜리 빠른 검사를 넣으면 활성화됩니다.
 inst_mcp_exists=%s 파일이 이미 있어 덮어쓰지 않습니다. config/mcp.json 내용을 직접 병합하세요.
 inst_mcp_done=MCP 설정을 설치했습니다.

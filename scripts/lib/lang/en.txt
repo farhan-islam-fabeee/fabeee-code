@@ -117,7 +117,7 @@ aliases_q=Add shell aliases (pil = local, pic = cloud)?
 aliases_dry=write to %s:
 aliases_added=Aliases added to %s (open a new terminal to use them).
 # 5. kit
-step_kit=5/7 Skills, rules, quality gate
+step_kit=5/7 Skills, quality gate, MCP
 gate_q=Install the quality-gate extension (re-runs .pi/check when the agent finishes)?
 mcp_title=MCP servers:
 probe_q=  Probe: local code search that returns whole functions (runs on your machine)?
@@ -146,7 +146,7 @@ check_written=.pi/check: %s
 agents_q=Create a starter AGENTS.md for this project (short, English, with detected commands)?
 agents_dry=write AGENTS.md:
 agents_created=AGENTS.md created. Fill in the TODO lines.
-agents_exists=Project already has an AGENTS.md or CLAUDE.md; left as is.
+agents_exists=Project already has an AGENTS.md or CLAUDE.md; keeping its content.
 gitignore_dry=append .pi/handoff.md to .gitignore
 gitignore_added=.gitignore: added .pi/handoff.md
 # summary
@@ -172,9 +172,8 @@ dry_done=Dry run finished; nothing was changed.
 inst_backed_up=  backed up %s -> %s/
 inst_skill=  skill: %s
 inst_skills_done=Skills installed in %s. In pi, /skills-global copies chosen ones to ~/.agents/skills for every project.
-inst_agents_same=  AGENTS.md already up to date
-inst_agents_backup=  backed up existing AGENTS.md -> %s (merge any rules you still want)
-inst_agents_done=  global rules: %s
+inst_agents_same=  agent rules already up to date in %s
+inst_agents_done=  agent rules (language, terse internals) written to %s
 inst_ext_done=Extension installed. Add a one-line fast check to <project>/.pi/check to enable it per project.
 inst_mcp_exists=%s already exists; not overwriting. Merge config/mcp.json into it by hand.
 inst_mcp_done=MCP config installed.

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # Install parts of fabeee-code into your pi setup.
-# Never overwrites models.json or settings.json; existing extensions and AGENTS.md are backed up first.
+# Never overwrites models.json or settings.json; existing extensions are backed up first.
 #
 #   ./scripts/install.sh skills [project]    copy skills/* to <project>/.agents/skills/ (default: current folder)
 #                                            and the /skills-global pi command to ~/.pi/agent/extensions/
-#   ./scripts/install.sh context             only install context/AGENTS.md (global rules: language, terse internals)
+#   ./scripts/install.sh context [project]   add/update the rules section (context/AGENTS.md) in <project>/AGENTS.md
 #   ./scripts/install.sh extension           copy extensions/quality-gate.ts to ~/.pi/agent/extensions/
 #   ./scripts/install.sh mcp                 copy config/mcp.json to ~/.pi/agent/mcp.json (only if absent)
 #   ./scripts/install.sh packages <tier>     pi install the packages in a tier (see TIERS below)
-#   ./scripts/install.sh all [project]       skills + context + extension + mcp (no packages)
+#   ./scripts/install.sh all [project]       skills + rules + extension + mcp (no packages)
 #
 # Set DRY_RUN=1 to print actions without doing them. Messages follow FABEEE_CODE_LANG (en, ja, ko, bn).
 
@@ -56,19 +56,29 @@ install_skills() {
 }
 
 install_context() {
-  local target="$PI_DIR/AGENTS.md"
-  run mkdir -p "$PI_DIR"
-  if [[ -e "$target" ]] && cmp -s "$ROOT/context/AGENTS.md" "$target"; then
-    t inst_agents_same; echo
-    return
+  local project="${1:-${FABEEE_CODE_PROJECT:-$PWD}}" target
+  # Use the project's existing context file; pi reads AGENTS.md or CLAUDE.md.
+  target="$project/AGENTS.md"
+  [[ ! -e $target && -e $project/CLAUDE.md ]] && target="$project/CLAUDE.md"
+  local begin="<!-- fabeee-code:rules -->" end="<!-- /fabeee-code:rules -->" tmp
+  tmp=$(mktemp)
+  # Keep everything outside our marked section (dropping trailing blank lines), then append it fresh.
+  if [[ -f $target ]]; then
+    awk -v b="$begin" -v e="$end" '
+      $0 == b { skip = 1; next }
+      $0 == e { skip = 0; next }
+      skip { next }
+      /^$/ { blank++; next }
+      { while (blank > 0) { print ""; blank-- } print }' "$target" > "$tmp"
   fi
-  if [[ -e "$target" ]]; then
-    # pi only loads the exact name AGENTS.md, so a suffixed backup beside it stays inert
-    run mv "$target" "$target.backup-$STAMP"
-    t inst_agents_backup "$target.backup-$STAMP"; echo
+  { [[ -s $tmp ]] && { cat "$tmp"; echo; }; echo "$begin"; cat "$ROOT/context/AGENTS.md"; echo "$end"; } > "$tmp.new"
+  if [[ -f $target ]] && cmp -s "$tmp.new" "$target"; then
+    t inst_agents_same "$target"; echo
+  else
+    run cp "$tmp.new" "$target"
+    t inst_agents_done "$target"; echo
   fi
-  run cp "$ROOT/context/AGENTS.md" "$target"
-  t inst_agents_done "$target"; echo
+  rm -f "$tmp" "$tmp.new"
 }
 
 install_extension() {
@@ -120,10 +130,10 @@ install_packages() {
 
 case "${1:-}" in
   skills) install_skills "${2:-}" ;;
-  context) install_context ;;
+  context) install_context "${2:-}" ;;
   extension) install_extension ;;
   mcp) install_mcp ;;
   packages) install_packages "${2:-}" ;;
-  all) install_skills "${2:-}"; install_context; install_extension; install_mcp ;;
+  all) install_skills "${2:-}"; install_context "${2:-}"; install_extension; install_mcp ;;
   *) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

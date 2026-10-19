@@ -13,7 +13,7 @@ bootstrap.sh                one-liner entry point: downloads/updates the kit in 
 docs/gameplan.md            the full plan: phases 0–7, rationale, rollout checklist
 docs/research.md            package and MCP findings (adopted / A-B / rejected), cache pricing, open questions
 skills/                     8 token- and compaction-saving skills (Agent Skills format)
-context/AGENTS.md           global rules installed with the skills: Japanese for comments, docs and replies; terse English internally
+context/AGENTS.md           agent rules added as a section of the project's AGENTS.md: Japanese for comments, docs and replies; terse English internally
 skills-ja/                  Japanese translations, kept for reference (they cost 13–71% more tokens depending on the model; see docs/research.md)
 config/models.local.json    oMLX provider: context window matched to the server, sampling per thinking level
 config/settings.json        pi settings: low thinking, codemode, compaction sized for 32k
@@ -60,13 +60,13 @@ It first asks for a display language: English, 日本語, 한국어 or বাং
    - **Cloud:** OpenRouter, DeepSeek, Z.ai, Moonshot, the other providers built into pi, or a custom OpenAI-compatible endpoint with prices and cache lifetime.
    - **API keys:** store them in the macOS Keychain (pi runs `security` on each request), in an environment variable, with pi's own `/login`, or, for a local server only, as plain text.
 4. **Settings:** writes pi's settings (low thinking by default, codemode, compaction sized to the local window), sets the default model (globally or for this project only), and can add `pil`/`pic` shell aliases.
-5. **Kit:** installs the skills **into this project** (`.agents/skills/`), the global `AGENTS.md`, the `/skills-global` command, the quality gate, and the Probe and Context7 MCP servers.
+5. **Kit:** installs the skills **into this project** (`.agents/skills/`), the `/skills-global` command, the quality gate, and the Probe and Context7 MCP servers.
 6. **Packages:** offers each package tier separately. Every package runs code, so each one asks first.
-7. **Project files:** sets up git, `.pi/check` (detected from package.json, Cargo, Go or Python), a starter `AGENTS.md`, and `.gitignore`.
+7. **Project files:** sets up git, `.pi/check` (detected from package.json, Cargo, Go or Python), a starter `AGENTS.md` if there's none, the agent-rules section in the project's `AGENTS.md` (replaced on re-runs, the rest of the file untouched), and `.gitignore`.
 
 Every pi config file it changes is backed up first (`<file>.backup-<timestamp>`), and it's safe to re-run. `--dry-run` asks the same questions but writes nothing.
 
-To install pieces by hand instead, `./scripts/install.sh all <project>` installs the skills into that project, `AGENTS.md`, the extension and the MCP config, and `./scripts/install.sh packages <tier>` installs one tier (`core`, `tokens`, `ondemand`, `tuning`, `cloud`, `ab`). Merge [config/models.local.json](config/models.local.json) and [config/settings.json](config/settings.json) into `~/.pi/agent/` yourself (gameplan Phase 0–1).
+To install pieces by hand instead, `./scripts/install.sh all <project>` installs the skills and the agent rules into that project, the extension and the MCP config, and `./scripts/install.sh packages <tier>` installs one tier (`core`, `tokens`, `ondemand`, `tuning`, `cloud`, `ab`). Merge [config/models.local.json](config/models.local.json) and [config/settings.json](config/settings.json) into `~/.pi/agent/` yourself (gameplan Phase 0–1).
 
 ## Skills
 

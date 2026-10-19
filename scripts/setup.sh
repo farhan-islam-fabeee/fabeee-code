@@ -364,7 +364,6 @@ fi
 # ---------- 5. kit ----------
 step "$(t step_kit)"
 "$KIT/scripts/install.sh" skills "$PROJECT"
-"$KIT/scripts/install.sh" context
 if confirm "$(t gate_q)" y; then
   "$KIT/scripts/install.sh" extension
 fi
@@ -427,6 +426,7 @@ if [[ ! -e AGENTS.md && ! -e CLAUDE.md ]]; then
 else
   ok "$(t agents_exists)"
 fi
+"$KIT/scripts/install.sh" context "$PROJECT"
 
 if ! grep -qx '.pi/handoff.md' .gitignore 2>/dev/null; then
   if [[ $DRY_RUN == 1 ]]; then run "$(t gitignore_dry)"
