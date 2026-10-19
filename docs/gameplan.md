@@ -32,7 +32,7 @@ Your configs disagree with each other:
 
 **0.1 Pick the real context size.** At 4-bit, a 27B model's weights take about 15–16 GB. Start at **32768**. If `memory_pressure` stays green during a long session, try **49152** in oMLX. Then set pi to the **same number**.
 
-**0.2 Replace `~/.pi/agent/models.json`** (ready-made: [`config/models.local.json`](../config/models.local.json); set `OMLX_API_KEY` to your oMLX key) (pi already keeps `.bak` copies, and you should make one too):
+**0.2 Replace `~/.pi/agent/models.json`** (generic template: [`config/models.local.example.json`](../config/models.local.example.json); the oMLX-specific version is below) (pi already keeps `.bak` copies, and you should make one too):
 
 ```json
 {

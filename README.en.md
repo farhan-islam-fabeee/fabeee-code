@@ -15,7 +15,7 @@ docs/research.md            package and MCP findings (adopted / A-B / rejected),
 skills/                     8 token- and compaction-saving skills (Agent Skills format)
 context/AGENTS.md           agent rules added as a section of the project's AGENTS.md: Japanese for comments, docs and replies; terse English internally
 skills-ja/                  Japanese translations, kept for reference (they cost 13–71% more tokens depending on the model; see docs/research.md)
-config/models.local.json    oMLX provider: context window matched to the server, sampling per thinking level
+config/models.local.example.json  template for a local OpenAI-compatible server (oMLX, Ollama, LM Studio, …)
 config/settings.json        pi settings: low thinking, codemode, compaction sized for 32k
 config/mcp.json             Probe (local code search) + Context7 (docs)
 config/models.cloud.example.json  template for any OpenAI-compatible cloud provider
@@ -84,7 +84,7 @@ Otherwise it walks through 7 steps and asks before each change:
 
 Every config file it changes is backed up first (`<file>.backup-<timestamp>`), and it's safe to re-run. `--dry-run` asks the same questions but writes nothing.
 
-To install pieces by hand instead, `./scripts/install.sh all <project>` installs the skills, rules, extensions and MCP config into that project, and `./scripts/install.sh packages <tier> <project>` installs one tier (`core`, `tokens`, `ondemand`, `tuning`, `cloud`, `ab`). [config/models.local.json](config/models.local.json) and [config/settings.json](config/settings.json) are examples you can copy into a project's `.pi/` (gameplan Phase 0–1).
+To install pieces by hand instead, `./scripts/install.sh all <project>` installs the skills, rules, extensions and MCP config into that project, and `./scripts/install.sh packages <tier> <project>` installs one tier (`core`, `tokens`, `ondemand`, `tuning`, `cloud`, `ab`). [config/models.local.example.json](config/models.local.example.json) and [config/settings.json](config/settings.json) are examples you can copy into a project's `.pi/` (gameplan Phase 0–1).
 
 ## Skills
 

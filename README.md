@@ -15,7 +15,7 @@ docs/research.md            パッケージと MCP の調査結果（採用・A/
 skills/                     トークンと圧縮を節約する 8 つのスキル（Agent Skills 形式）
 context/AGENTS.md           プロジェクトの AGENTS.md に追加するエージェントルール: コメント・ドキュメント・応答は日本語、内部作業は簡潔な英語
 skills-ja/                  スキルの日本語訳（参照用。モデルによってトークンが 13〜71% 増えます。docs/research.md を参照）
-config/models.local.json    oMLX プロバイダー: コンテキストウィンドウをサーバーに合わせ、思考レベルごとにサンプリングを設定
+config/models.local.example.json  ローカルの OpenAI 互換サーバー（oMLX、Ollama、LM Studio など）用のテンプレート
 config/settings.json        pi の設定: 思考レベル低め、codemode、32k 向けの圧縮設定
 config/mcp.json             Probe（ローカルのコード検索）と Context7（ドキュメント）
 config/models.cloud.example.json  OpenAI 互換クラウドプロバイダー用のテンプレート
@@ -84,7 +84,7 @@ pi はプロジェクトを信頼したあとでのみ `.pi/` を読み込みま
 
 変更する設定ファイルは、事前にすべてバックアップします（`<file>.backup-<timestamp>`）。何度実行しても安全です。`--dry-run` を付けると、同じ質問をしたうえで何も書き込みません。
 
-手動で個別にインストールする場合は、`./scripts/install.sh all <project>` でスキル、ルール、拡張機能、MCP 設定をそのプロジェクトに、`./scripts/install.sh packages <tier> <project>` でパッケージ群を 1 つ（`core`、`tokens`、`ondemand`、`tuning`、`cloud`、`ab`）インストールします。[config/models.local.json](config/models.local.json) と [config/settings.json](config/settings.json) は、プロジェクトの `.pi/` にコピーして使える例です（gameplan の Phase 0〜1）。
+手動で個別にインストールする場合は、`./scripts/install.sh all <project>` でスキル、ルール、拡張機能、MCP 設定をそのプロジェクトに、`./scripts/install.sh packages <tier> <project>` でパッケージ群を 1 つ（`core`、`tokens`、`ondemand`、`tuning`、`cloud`、`ab`）インストールします。[config/models.local.example.json](config/models.local.example.json) と [config/settings.json](config/settings.json) は、プロジェクトの `.pi/` にコピーして使える例です（gameplan の Phase 0〜1）。
 
 ## スキル
 

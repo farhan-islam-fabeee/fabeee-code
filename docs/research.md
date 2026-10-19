@@ -85,7 +85,7 @@ OpenRouter keeps follow-up requests on the same backend once there's been a cach
 
 ## Not verified
 
-- Sampling key names in `config/models.local.json` (check them against the schema).
+- Sampling key names in the oMLX example in `docs/gameplan.md` Phase 0.2 (check them against the schema).
 - The exact return shape of `codemode`'s `tools.bash` (the `batch-tools` skill tells the model to call `describeTool` first).
 - Whether `disable-model-invocation` removes a skill's description from the prompt.
 - Whether pi sends `cache_control` for Anthropic and Qwen models through OpenRouter (check `cached_tokens`).
