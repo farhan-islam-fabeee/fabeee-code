@@ -96,3 +96,22 @@ OpenRouter keeps follow-up requests on the same backend once there's been a cach
 - [OpenRouter prompt caching](https://openrouter.ai/docs/features/prompt-caching)
 - [oMLX discussion](https://github.com/ml-explore/mlx/discussions/3203)
 - [MLX vs llama.cpp benchmark](https://rapidmlx.com/blog/mlx-vs-llama-cpp-benchmark)
+
+## Japanese vs English skills (2026-10-19)
+
+`skills-ja/` holds Japanese translations of all 8 skills. Code, commands, paths and tool names stay in English. I counted tokens with the **Qwen3.8-27B tokenizer** (the model's own `tokenizer.json`) using `scripts/count_tokens.py`:
+
+| What | English | Japanese | Difference |
+|---|---|---|---|
+| Descriptions (always in the system prompt) | 210 | 250 | **+19%** |
+| Full SKILL.md files (loaded when a skill runs) | 1,959 | 2,208 | **+13%** |
+| Prose only (code and inline code removed) | 1,267 | 1,479 | **+17%** |
+| Characters | 6,953 | 4,965 | −29% |
+
+Japanese uses about 30% fewer characters, but each token carries about half as many characters (1.96 per token against 3.83 for English prose). **Every one of the 8 skills costs more in Japanese** (+5% to +38% per description). Keep the English `skills/` installed. `skills-ja/` is there for reading and reference. Don't install both, because the skill names collide.
+
+Two side effects:
+- **Output language follows the instructions.** A Japanese skill tends to make the model write handoff files, MAP.md and scout replies in Japanese, so those cost extra tokens every time they're read back. On a local model that's also slower decode.
+- **pi's chars/4 estimate undercounts Japanese.** For these files it estimates 1,237 tokens against an actual 2,208 (44% low). For English it's 1,735 against 1,959 (11% low). That estimate is used for `codemode.inlineBudget` and compaction cut points, so Japanese-heavy context is larger than pi thinks.
+
+Not measured: cloud tokenizers (OpenAI, Claude, DeepSeek and others). Other tokenizers will give different numbers, so measure on the model you actually use.
