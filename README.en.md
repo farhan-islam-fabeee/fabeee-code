@@ -22,7 +22,8 @@ config/models.cloud.example.json  template for any OpenAI-compatible cloud provi
 extensions/quality-gate.ts  runs the project's fast check when the agent finishes and feeds failures back
 extensions/skills-global.ts /skills-global pi command: copies chosen project skills to ~/.agents/skills
 extensions/agents-md-only.ts makes pi read only AGENTS.md (drops CLAUDE.md from its context files)
-scripts/setup.sh            guided setup, run from a project folder: installs pi, configures local/cloud, installs the kit, prepares the project
+extensions/project-models.ts registers the providers in a project's .pi/models.json (pi only reads models.json globally)
+scripts/setup.sh            guided setup, run from a project folder: writes the whole pi setup into the project
 scripts/lib/pi-config.mjs   JSON/project helper used by setup.sh (backs up every file it changes)
 scripts/lib/i18n.sh         message loader; catalogs in scripts/lib/lang/{en,ja,ko,bn}.txt
 scripts/lib/check-i18n.mjs  checks the catalogs have the same keys and placeholders (run after editing messages)
@@ -52,22 +53,38 @@ less bootstrap.sh && bash bootstrap.sh
 
 If you've cloned the repo, you can also run `scripts/setup.sh` from your project folder directly.
 
-It first asks for a display language: English, 日本語, 한국어 or বাংলা. Your system locale sets the default, and `--lang=ja` (or `FABEEE_CODE_LANG=ja`) skips the question. Then it walks through 7 steps and asks before each change:
+It first asks for a display language: English, 日本語, 한국어 or বাংলা. Your system locale sets the default, and `--lang=ja` (or `FABEEE_CODE_LANG=ja`) skips the question.
+
+**Everything is written into the project**, so you commit it once and the whole team gets the same setup. Nothing goes into `~/.pi/agent` except what pi itself needs on each machine.
+
+| In the project (commit it) | Per person (never committed) |
+|---|---|
+| `.pi/models.json`: model providers, loaded by `.pi/extensions/project-models.ts` | API keys: macOS Keychain, an environment variable, or pi's `/login`. `.pi/models.json` only holds a reference such as `${VAR}` or `!security …` |
+| `.pi/settings.json`: default model, thinking level, codemode, compaction, packages | pi itself |
+| `.pi/mcp.json`: Probe and Context7 | the `probe` program |
+| `.pi/extensions/`: quality gate, `/skills-global`, AGENTS.md-only, provider loader | `.pi/npm/` (downloaded packages) and `.pi/handoff.md`, both added to `.gitignore` |
+| `.agents/skills/`, `AGENTS.md`, `.pi/check` | |
+
+pi loads `.pi/` only after you trust the project, so answer yes to its trust prompt on first start.
+
+In a project that's already set up (for example after a teammate committed it), setup offers **"Use it"**: it only prepares your machine (pi, your own API keys, `probe`) and leaves the project as it is. pi installs the project's packages on first start.
+
+Otherwise it walks through 7 steps and asks before each change:
 
 1. **Project:** confirms the folder.
-2. **pi:** installs pi if it's missing (the official installer or npm) and checks the version.
-3. **Models:** choose local, cloud or both.
+2. **pi:** installs pi if it's missing (the official installer or npm), makes sure your shell can find it, and checks the version.
+3. **Models:** choose local, cloud or both, saved to `.pi/models.json`.
    - **Local:** oMLX, Ollama, LM Studio, a llama.cpp router, or any OpenAI-compatible server. The script lists the server's models and asks for the context window the server *actually* serves (for oMLX it reads `~/.omlx/settings.json`).
    - **Cloud:** OpenRouter, DeepSeek, Z.ai, Moonshot, the other providers built into pi, or a custom OpenAI-compatible endpoint with prices and cache lifetime.
-   - **API keys:** store them in the macOS Keychain (pi runs `security` on each request), in an environment variable, with pi's own `/login`, or, for a local server only, as plain text.
-4. **Settings:** writes pi's settings (low thinking by default, codemode, compaction sized to the local window), sets the default model (globally or for this project only), and can add `pil`/`pic` shell aliases.
-5. **Kit:** installs the skills **into this project** (`.agents/skills/`), the `/skills-global` command, the quality gate, and the Probe and Context7 MCP servers.
-6. **Packages:** offers each package tier separately. Every package runs code, so each one asks first.
-7. **Project files:** sets up git, `.pi/check` (detected from package.json, Cargo, Go or Python), a starter `AGENTS.md` if there's none, the agent-rules section in the project's `AGENTS.md` (replaced on re-runs, the rest of the file untouched), and `.gitignore`. pi reads only `AGENTS.md`: an installed extension drops `CLAUDE.md` from its context, and setup warns if one exists but never edits it.
+   - **API keys:** the macOS Keychain (pi runs `security` on each request), an environment variable, or pi's own `/login`. There's no plain-text option, because the file is shared.
+4. **Settings:** writes `.pi/settings.json` (low thinking by default, codemode, compaction sized to the local window) with the project's default model.
+5. **Kit:** installs the skills into `.agents/skills/`, the `/skills-global` command, the quality gate, and the Probe and Context7 MCP servers in `.pi/mcp.json`.
+6. **Packages:** offers each package tier separately and installs with `pi install -l`, so they're declared in `.pi/settings.json`. Every package runs code, so each tier asks first.
+7. **Project files:** sets up git, `.pi/check` (detected from package.json, Cargo, Go or Python), a starter `AGENTS.md` if there's none, the agent-rules section in `AGENTS.md` (replaced on re-runs, the rest of the file untouched), and `.gitignore`. pi reads only `AGENTS.md`: an installed extension drops `CLAUDE.md` from its context, and setup warns if one exists but never edits it.
 
-Every pi config file it changes is backed up first (`<file>.backup-<timestamp>`), and it's safe to re-run. `--dry-run` asks the same questions but writes nothing.
+Every config file it changes is backed up first (`<file>.backup-<timestamp>`), and it's safe to re-run. `--dry-run` asks the same questions but writes nothing.
 
-To install pieces by hand instead, `./scripts/install.sh all <project>` installs the skills and the agent rules into that project, the extension and the MCP config, and `./scripts/install.sh packages <tier>` installs one tier (`core`, `tokens`, `ondemand`, `tuning`, `cloud`, `ab`). Merge [config/models.local.json](config/models.local.json) and [config/settings.json](config/settings.json) into `~/.pi/agent/` yourself (gameplan Phase 0–1).
+To install pieces by hand instead, `./scripts/install.sh all <project>` installs the skills, rules, extensions and MCP config into that project, and `./scripts/install.sh packages <tier> <project>` installs one tier (`core`, `tokens`, `ondemand`, `tuning`, `cloud`, `ab`). [config/models.local.json](config/models.local.json) and [config/settings.json](config/settings.json) are examples you can copy into a project's `.pi/` (gameplan Phase 0–1).
 
 ## Skills
 

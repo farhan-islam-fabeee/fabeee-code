@@ -31,6 +31,17 @@ path_manual=আপনার শেল প্রোফাইলে এই লা�
 pi_too_old=pi %s সংস্করণটি 1.0-এর চেয়ে পুরোনো; এই কিট pi 1.x (বিল্ট-ইন MCP, codemode)-এর ওপর নির্ভর করে।
 pi_update_q=এখনই pi আপডেট করবেন (pi update self)?
 node_missing=Node.js পাওয়া যায়নি। সাধারণত pi ইনস্টলার এটি সঙ্গে দেয়; ইনস্টলারটি আবার চালান।
+# existing project setup
+step_machine=এই মেশিন (প্রজেক্ট আগে থেকেই সেট আপ করা)
+key_present=%s: আপনার Keychain-এ কী পাওয়া গেছে
+key_store_q=%s: আপনার Keychain-এ এখনও কোনো কী নেই। এখনই সংরক্ষণ করবেন?
+builtin_key_hint=এই প্রজেক্ট ডিফল্ট হিসেবে %s ব্যবহার করে। যদি এখনও কী না থাকে, pi-তে /login %s চালান অথবা এর এনভায়রনমেন্ট ভ্যারিয়েবল সেট করুন।
+existing_setup=এই প্রজেক্টে ইতিমধ্যে %s-এ pi সেটআপ আছে (git দিয়ে শেয়ার করা)।
+existing_q=কী করতে চান?
+existing_use=এটি ব্যবহার করুন: শুধু এই মেশিন প্রস্তুত করুন (pi, আপনার API কী, probe)
+existing_redo=প্রজেক্ট আবার কনফিগার করুন (মডেল, সেটিংস, স্কিল, প্যাকেজ)
+next_commit=git add .pi .agents AGENTS.md .gitignore && git commit   টিমের সঙ্গে সেটআপ শেয়ার করুন
+next_team=টিমের সদস্যরা নিজেদের ক্লোনে একই এক-লাইনের কমান্ড চালিয়ে "এটি ব্যবহার করুন" বেছে নেবেন; pi প্রথমবার চালু হলে প্যাকেজ ইনস্টল করবে।
 # 3. models
 step_models=3/7 মডেল
 mode_q=কোন মডেল ব্যবহার করবেন?
@@ -70,7 +81,6 @@ key_where=%s-এর API কী কোথায় রাখবেন?
 key_login=পরে pi-এর ভেতরে /login %s দিয়ে লগ ইন করুন (pi নিজেই কী সংরক্ষণ করে)
 key_keychain=macOS Keychain (প্রতিটি অনুরোধে pi security কমান্ড দিয়ে এটি পড়ে)
 key_env=এনভায়রনমেন্ট ভ্যারিয়েবল $%s (আপনি নিজে শেল প্রোফাইলে export করবেন)
-key_plain=models.json-এ সাধারণ টেক্সট হিসেবে (শুধু লোকাল সার্ভারের কী-এর জন্য)
 key_dry=%s-এর API কী (ড্রাই রান: শুধু মেমোরিতে রাখা হবে)
 key_twice=macOS দুবার কী চাইবে (এটি এই স্ক্রিপ্টে নয়, security টুলে লেখা হয়)।
 keychain_failed=Keychain-এ লেখা যায়নি।
@@ -78,7 +88,6 @@ key_stored=কী-টি লগইন কিচেইনে "%s" নামে �
 env_set=এই শেলে $%s সেট করা আছে।
 env_unset=$%s সেট করা নেই। আপনার শেল প্রোফাইলে যোগ করুন: export %s=...
 key_paste=এখনই পরীক্ষা করতে কী-টি পেস্ট করুন (শুধু মেমোরিতে রাখা হবে, এড়িয়ে যেতে Enter চাপুন)
-api_key=API কী
 # model picker
 models_filter=মোট %sটি মডেল আছে। নাম দিয়ে ফিল্টার করুন (যেমন qwen, glm, kimi, deepseek)
 model_id=মডেল ID
@@ -107,21 +116,16 @@ cache_ttl_q=প্রম্পট ক্যাশের মেয়াদ, স�
 cloud_provider=ক্লাউড প্রোভাইডার: %s
 cloud_provider_model=ক্লাউড প্রোভাইডার: %s (মডেল %s)
 # 4. settings
-step_settings=4/7 pi সেটিংস
-default_q=ডিফল্ট হিসেবে কোন মডেল চালু হবে?
-default_local=সব জায়গায় লোকাল; প্রয়োজনে ক্লাউড (pi --model ...)
-default_project=সাধারণত লোকাল, কিন্তু এই প্রজেক্টে ক্লাউড ডিফল্ট
-default_cloud=সব জায়গায় ক্লাউড
+step_settings=4/7 pi সেটিংস (এই প্রজেক্ট)
+default_q=এই প্রজেক্ট ডিফল্ট হিসেবে কোন মডেল ব্যবহার করবে?
+default_local=লোকাল: %s (ক্লাউড ব্যবহার করুন pi --model ... দিয়ে)
+default_cloud=ক্লাউড: %s
 settings_changes=%s-এ পরিবর্তন:
 settings_note=(কম ডিফল্ট থিংকিং, codemode চালু, লোকাল উইন্ডো অনুযায়ী কমপ্যাকশন, টিউনিংয়ের সময় ক্যাশ-মিস নোটিশ চালু)
 apply_q=এই সেটিংস প্রয়োগ করবেন?
 settings_skipped=সেটিংস অপরিবর্তিত রাখা হয়েছে।
-project_trust=প্রজেক্টটিকে ট্রাস্ট করার পরেই pi .pi/settings.json পড়ে (প্রথমবার চালানোর সময় জিজ্ঞেস করবে)।
-aliases_q=শেল অ্যালিয়াস যোগ করবেন (pil = লোকাল, pic = ক্লাউড)?
-aliases_dry=%s-এ যা লেখা হবে:
-aliases_added=%s-এ অ্যালিয়াস যোগ করা হয়েছে (ব্যবহার করতে একটি নতুন টার্মিনাল খুলুন)।
 # 5. kit
-step_kit=5/7 স্কিল, কোয়ালিটি গেট, MCP
+step_kit=5/7 স্কিল, কোয়ালিটি গেট, MCP (এই প্রজেক্ট)
 gate_q=কোয়ালিটি-গেট এক্সটেনশন ইনস্টল করবেন (এজেন্টের কাজ শেষ হলে .pi/check আবার চালায়)?
 mcp_title=MCP সার্ভার:
 probe_q=  Probe (পুরো ফাংশন ফেরত দেয় এমন লোকাল কোড সার্চ, আপনার মেশিনেই চলে) যোগ করবেন?
@@ -129,7 +133,7 @@ probe_install_q=  Probe ইনস্টল করা নেই। npm install -g
 probe_later=  পরে ইনস্টল করুন; তার আগ পর্যন্ত pi probe-কে সংযোগবিচ্ছিন্ন দেখাবে।
 context7_q=  Context7 (হালনাগাদ লাইব্রেরি ডকুমেন্টেশন; রিমোট, লাইব্রেরির নাম ও প্রশ্ন context7.com-এ পাঠায়) যোগ করবেন?
 # 6. packages
-step_packages=6/7 pi প্যাকেজ
+step_packages=6/7 pi প্যাকেজ (এই প্রজেক্ট)
 packages_warn=প্যাকেজগুলো আপনার অনুমতিতে কোড চালায়। আগে https://pi.dev/packages/<name>-এ সেগুলো দেখে নিন।
 tier_skip=%s বাদ দেওয়া হলো: pi ইনস্টল করা নেই (ড্রাই রান)।
 tier_core=core: pi-lens (ডায়াগনস্টিকস), cc-safety-net, rpiv-todo-lean, pi-rtk-optimizer (আউটপুট সংক্ষেপণ) ইনস্টল করবেন?
@@ -152,13 +156,10 @@ agents_dry=AGENTS.md-এ যা লেখা হবে:
 agents_created=AGENTS.md তৈরি হয়েছে। TODO লাইনগুলো পূরণ করুন।
 agents_exists=প্রজেক্টে আগে থেকেই AGENTS.md আছে; এর বিষয়বস্তু যেমন আছে তেমনই থাকবে।
 claude_ignored=CLAUDE.md পাওয়া গেছে: pi এটি উপেক্ষা করবে এবং শুধু AGENTS.md পড়বে। যা এখনও দরকার তা AGENTS.md-এ সরিয়ে নিন (CLAUDE.md যেমন আছে তেমনই থাকবে)।
-gitignore_dry=.gitignore-এ .pi/handoff.md যোগ করা হবে
-gitignore_added=.gitignore: .pi/handoff.md যোগ করা হয়েছে
+gitignore_dry=.gitignore-এ %s যোগ করা হবে
+gitignore_added=.gitignore: %s যোগ করা হয়েছে
 # summary
 step_checks=যাচাই
-creds_ready=%s: ক্রেডেনশিয়াল প্রস্তুত
-not_logged_in=%s: এখনও লগ ইন করা হয়নি (pi-তে /login %s চালান)
-not_ready=%s: প্রস্তুত নয় (%s)
 local_ok=লোকাল সার্ভার %s-এ সাড়া দিচ্ছে
 local_no=লোকাল সার্ভার %s-এ সাড়া দিচ্ছে না
 step_next=পরবর্তী ধাপ
@@ -174,16 +175,14 @@ omlx_tip2=আর SSD ক্যাশ চালু রাখুন (docs/gameplan
 measure=আরও কিছু যোগ করার আগে মেপে দেখুন: docs/gameplan.md, Phase 6।
 dry_done=ড্রাই রান শেষ; কিছুই বদলানো হয়নি।
 # install.sh
-inst_backed_up=  %s ব্যাকআপ করা হয়েছে -> %s/
 inst_skill=  স্কিল: %s
 inst_skills_done=স্কিল %s-এ ইনস্টল হয়েছে। pi-তে /skills-global চালালে বেছে নেওয়া স্কিল ~/.agents/skills-এ কপি হবে, যাতে সব প্রজেক্টে ব্যবহার করা যায়।
 inst_agents_same=  %s-এ এজেন্ট নিয়ম ইতিমধ্যে হালনাগাদ
 inst_agents_done=  এজেন্ট নিয়ম (ভাষা, সংক্ষিপ্ত অভ্যন্তরীণ কাজ) %s-এ লেখা হয়েছে
-inst_ext_done=এক্সটেনশন ইনস্টল হয়েছে। প্রতিটি প্রজেক্টে চালু করতে <project>/.pi/check-এ এক লাইনের দ্রুত চেক লিখুন।
+inst_ext_done=কোয়ালিটি গেট .pi/extensions-এ ইনস্টল হয়েছে। চালু করতে .pi/check-এ এক লাইনের দ্রুত চেক লিখুন।
 inst_mcp_exists=%s আগে থেকেই আছে; ওভাররাইট করা হবে না। config/mcp.json নিজে মিলিয়ে নিন।
-inst_mcp_done=MCP কনফিগ ইনস্টল হয়েছে।
+inst_mcp_done=MCP কনফিগ .pi/mcp.json-এ লেখা হয়েছে।
 inst_probe_missing=দ্রষ্টব্য: 'probe' PATH-এ নেই। চালান: npm install -g @probelabs/probe@latest
-inst_mcp_check=যাচাই করুন: pi mcp list
 inst_pkg_usage=ব্যবহার: %s packages core|tokens|ondemand|tuning|cloud|ab
 inst_pkg_warn=pi প্যাকেজ কোড চালায়। ইনস্টলের আগে প্রতিটির সোর্স দেখে নিন।
 inst_pkg_skip=  আগেই ইনস্টল করা: %s

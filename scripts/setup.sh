@@ -88,30 +88,34 @@ find_node() {
 cfg() { "$NODE" "$KIT/scripts/lib/pi-config.mjs" "$@"; }
 
 # ---------- api keys ----------
-# pick_key_storage ID ENV_VAR ALLOW_PLAIN ALLOW_LOGIN
+# Keys never go into the project (it is committed and shared): .pi/models.json only holds a
+# reference that each person's machine resolves, a Keychain lookup or an environment variable.
+keychain_svc() { printf 'fabeee-code:%s' "$1"; }
+keychain_ref() { printf '!security find-generic-password -a fabeee-code -s %s -w' "$(keychain_svc "$1")"; }
+
+store_keychain_key() { # store_keychain_key ID: save the key for provider ID; sets KEY_VALUE
+  local svc; svc=$(keychain_svc "$1")
+  if [[ $DRY_RUN == 1 ]]; then ask_secret KEY_VALUE "$(t key_dry "$1")"; return; fi
+  info "$(t key_twice)"
+  security add-generic-password -U -a fabeee-code -s "$svc" -w || die "$(t keychain_failed)"
+  KEY_VALUE=$(security find-generic-password -a fabeee-code -s "$svc" -w)
+  ok "$(t key_stored "$svc")"
+}
+
+# pick_key_storage ID ENV_VAR ALLOW_LOGIN
 # Sets KEY_REF (models.json "apiKey" value, empty = leave pi's default lookup alone),
 # KEY_VALUE (in memory only, used to list models during setup) and NEED_LOGIN.
 pick_key_storage() {
-  local id=$1 envvar=$2 allow_plain=$3 allow_login=$4 c svc="fabeee-code:$1"
+  local id=$1 envvar=$2 allow_login=$3 c
   local labels=() kinds=()
   if [[ $allow_login == 1 ]]; then labels+=("$(t key_login "$id")"); kinds+=(login); fi
   if [[ $(uname) == Darwin ]]; then labels+=("$(t key_keychain)"); kinds+=(keychain); fi
   labels+=("$(t key_env "$envvar")"); kinds+=(env)
-  if [[ $allow_plain == 1 ]]; then labels+=("$(t key_plain)"); kinds+=(plain); fi
   choose c "$(t key_where "$id")" "${labels[@]}"
   KEY_REF="" KEY_VALUE="" NEED_LOGIN=0
   case "${kinds[$((c - 1))]}" in
     login) NEED_LOGIN=1 ;;
-    keychain)
-      if [[ $DRY_RUN == 1 ]]; then
-        ask_secret KEY_VALUE "$(t key_dry "$id")"
-      else
-        info "$(t key_twice)"
-        security add-generic-password -U -a fabeee-code -s "$svc" -w || die "$(t keychain_failed)"
-        KEY_VALUE=$(security find-generic-password -a fabeee-code -s "$svc" -w)
-      fi
-      KEY_REF="!security find-generic-password -a fabeee-code -s $svc -w"
-      [[ $DRY_RUN == 1 ]] || ok "$(t key_stored "$svc")" ;;
+    keychain) store_keychain_key "$id"; KEY_REF=$(keychain_ref "$id") ;;
     env)
       if [[ -n ${!envvar:-} ]]; then KEY_VALUE=${!envvar}; ok "$(t env_set "$envvar")"
       else
@@ -119,9 +123,6 @@ pick_key_storage() {
         ask_secret KEY_VALUE "$(t key_paste)"
       fi
       KEY_REF="\${$envvar}" ;;
-    plain)
-      ask_secret KEY_VALUE "$(t api_key)"
-      KEY_REF=$KEY_VALUE ;;
   esac
 }
 
@@ -143,6 +144,9 @@ pick_model() {
 }
 
 # ---------- state ----------
+PI_PROJECT="$PROJECT/.pi"
+MODELS="$PI_PROJECT/models.json"
+SETTINGS="$PI_PROJECT/settings.json"
 USE_LOCAL=0 USE_CLOUD=0
 LOCAL_PROVIDER="" LOCAL_MODEL="" LOCAL_URL="" LOCAL_CTX="" LOCAL_BACKEND=""
 CLOUD_PROVIDER="" CLOUD_MODEL="" CLOUD_LOGIN=0
@@ -205,6 +209,44 @@ if [[ $HAVE_PI == 1 ]]; then
 fi
 find_node || die "$(t node_missing)"
 
+# ---------- existing project setup: only prepare this machine ----------
+# A teammate cloned a project that is already set up. Everything shared is in the repo; what each
+# person still needs is pi (step 2), their own API keys and the probe binary.
+machine_setup() {
+  step "$(t step_machine)"
+  local id ref var def
+  # Read the list on fd 3 so the questions inside the loop still read from the terminal.
+  while IFS=$'\t' read -r id ref <&3; do
+    [[ -n $id ]] || continue
+    case $ref in
+      '!security '*)
+        if security find-generic-password -a fabeee-code -s "$(keychain_svc "$id")" >/dev/null 2>&1; then ok "$(t key_present "$id")"
+        elif confirm "$(t key_store_q "$id")" y; then store_keychain_key "$id"; fi ;;
+      '$'*)
+        var=${ref#\$}; var=${var#\{}; var=${var%\}}
+        if [[ $var =~ ^[A-Za-z_][A-Za-z0-9_]*$ && -n ${!var:-} ]]; then ok "$(t env_set "$var")"
+        else warn "$(t env_unset "$var" "$var")"; fi ;;
+    esac
+  done 3< <(cfg key-refs "$MODELS" 2>/dev/null || true)
+  def=$(cfg json-get "$SETTINGS" defaultProvider 2>/dev/null || true)
+  if [[ -n $def ]] && ! cfg has-provider "$MODELS" "$def" 2>/dev/null; then info "$(t builtin_key_hint "$def" "$def")"; fi
+  if grep -qs '"probe"' "$PI_PROJECT/mcp.json" && ! command -v probe >/dev/null 2>&1; then
+    confirm "$(t probe_install_q)" y && run npm install -g @probelabs/probe@latest
+  fi
+  step "$(t step_next)"
+  info "1. $(t next_run "$PROJECT")"
+  info ""
+  [[ $DRY_RUN == 1 ]] && warn "$(t dry_done)"
+  exit 0
+}
+
+if [[ -f $MODELS || -f $SETTINGS ]]; then
+  info ""
+  info "$(t existing_setup "$PI_PROJECT")"
+  choose reuse "$(t existing_q)" "$(t existing_use)" "$(t existing_redo)"
+  [ "$reuse" -eq 1 ] && machine_setup
+fi
+
 # ---------- 3. models ----------
 step "$(t step_models)"
 choose mode "$(t mode_q)" "$(t mode_local)" "$(t mode_cloud)" "$(t mode_both)"
@@ -232,11 +274,11 @@ setup_local() {
   esac
   ask LOCAL_URL "$(t base_url)" "$url"
 
-  if cfg has-provider "$PI_DIR/models.json" "$LOCAL_PROVIDER" 2>/dev/null; then
+  if cfg has-provider "$MODELS" "$LOCAL_PROVIDER" 2>/dev/null; then
     warn "$(t provider_exists "$LOCAL_PROVIDER")"
   fi
   if confirm "$(t needs_key_q)" "$needs_key"; then
-    pick_key_storage "$LOCAL_PROVIDER" "$(upper_env "$LOCAL_PROVIDER")" 1 0
+    pick_key_storage "$LOCAL_PROVIDER" "$(upper_env "$LOCAL_PROVIDER")" 0
   else
     KEY_REF=$LOCAL_PROVIDER KEY_VALUE=""   # dummy key: makes the provider available, the server ignores it
   fi
@@ -266,7 +308,7 @@ setup_local() {
 
   PK_ID=$LOCAL_PROVIDER PK_BASE_URL=$LOCAL_URL PK_API_KEY=$KEY_REF PK_MODEL_ID=$model \
   PK_MODEL_NAME="$model (local)" PK_CONTEXT=$ctx PK_MAX_TOKENS=$maxout PK_REASONING=$reasoning \
-  PK_IMAGES=$images PK_CACHE_TTL=3600 cfg upsert-provider "$PI_DIR/models.json"
+  PK_IMAGES=$images PK_CACHE_TTL=3600 cfg upsert-provider "$MODELS"
   ok "$(t local_model "$LOCAL_MODEL")"
 }
 
@@ -293,11 +335,11 @@ setup_cloud() {
   esac
 
   if [[ $custom == 0 ]]; then
-    pick_key_storage "$CLOUD_PROVIDER" "$envvar" 0 1
+    pick_key_storage "$CLOUD_PROVIDER" "$envvar" 1
     CLOUD_LOGIN=$NEED_LOGIN
     # Keychain needs an apiKey override; env var / login use pi's built-in lookup.
     if [[ $KEY_REF == "!security"* ]]; then
-      PK_ID=$CLOUD_PROVIDER PK_API_KEY=$KEY_REF cfg upsert-provider "$PI_DIR/models.json"
+      PK_ID=$CLOUD_PROVIDER PK_API_KEY=$KEY_REF cfg upsert-provider "$MODELS"
     fi
     if [[ $HAVE_PI == 1 && -n $KEY_VALUE ]]; then
       info "$(t asking_pi_models "$CLOUD_PROVIDER")"
@@ -310,7 +352,7 @@ setup_cloud() {
     fi
   else
     ask url "$(t base_url_v1)" "https://api.example.com/v1"
-    pick_key_storage "$CLOUD_PROVIDER" "$envvar" 0 0
+    pick_key_storage "$CLOUD_PROVIDER" "$envvar" 0
     if ids=$(FABEEE_CODE_KEY="$KEY_VALUE" cfg list-models "$url" 2>/dev/null); then pick_model model "$ids"
     else warn "$(t list_failed_url "$url")"; ask model "$(t model_id)" ""; fi
     [[ -n $model ]] || die "$(t model_required_custom)"
@@ -324,7 +366,7 @@ setup_cloud() {
     ask ttl "$(t cache_ttl_q)" "300"
     PK_ID=$CLOUD_PROVIDER PK_BASE_URL=$url PK_API_KEY=$KEY_REF PK_MODEL_ID=$model PK_CONTEXT=$ctx \
     PK_MAX_TOKENS=$maxout PK_REASONING=$reasoning PK_COST="$pin,$pout,$pcr,$pcw" PK_CACHE_TTL=$ttl \
-    cfg upsert-provider "$PI_DIR/models.json"
+    cfg upsert-provider "$MODELS"
   fi
   if [[ -n $model ]]; then
     CLOUD_MODEL="$CLOUD_PROVIDER/$model"
@@ -336,51 +378,31 @@ setup_cloud() {
 
 [[ $USE_LOCAL == 1 ]] && setup_local
 [[ $USE_CLOUD == 1 ]] && setup_cloud
+# pi reads models.json only from ~/.pi/agent; this project extension loads .pi/models.json.
+[[ -f $MODELS || $DRY_RUN == 1 ]] && "$KIT/scripts/install.sh" models "$PROJECT"
 
 # ---------- 4. settings ----------
 step "$(t step_settings)"
-DEFAULT_MODEL="" PROJECT_DEFAULT=""
-if [[ $USE_LOCAL == 1 && $USE_CLOUD == 1 ]]; then
-  choose d "$(t default_q)" "$(t default_local)" "$(t default_project)" "$(t default_cloud)"
-  case $d in
-    1) DEFAULT_MODEL=$LOCAL_MODEL ;;
-    2) DEFAULT_MODEL=$LOCAL_MODEL PROJECT_DEFAULT=$CLOUD_MODEL ;;
-    3) DEFAULT_MODEL=$CLOUD_MODEL ;;
-  esac
-elif [[ $USE_LOCAL == 1 ]]; then DEFAULT_MODEL=$LOCAL_MODEL
-else DEFAULT_MODEL=$CLOUD_MODEL; fi
+DEFAULT_MODEL=$LOCAL_MODEL
+[[ -z $DEFAULT_MODEL ]] && DEFAULT_MODEL=$CLOUD_MODEL
+if [[ -n $LOCAL_MODEL && -n $CLOUD_MODEL ]]; then
+  choose d "$(t default_q)" "$(t default_local "$LOCAL_MODEL")" "$(t default_cloud "$CLOUD_MODEL")"
+  [ "$d" -eq 2 ] && DEFAULT_MODEL=$CLOUD_MODEL
+fi
 ENABLED=""
 [[ -n $LOCAL_MODEL && -n $CLOUD_MODEL ]] && ENABLED="$LOCAL_MODEL,$CLOUD_MODEL"
 
 export PK_DEFAULT=$DEFAULT_MODEL PK_LOCAL_MODEL=$LOCAL_MODEL PK_LOCAL_CTX=$LOCAL_CTX PK_ENABLED_MODELS=$ENABLED
-info "$(t settings_changes "$PI_DIR/settings.json")"
-cfg apply-settings "$PI_DIR/settings.json" preview
+info "$(t settings_changes "$SETTINGS")"
+cfg apply-settings "$SETTINGS" preview
 info "${DIM}$(t settings_note)${N}"
-if confirm "$(t apply_q)" y; then cfg apply-settings "$PI_DIR/settings.json" write; else warn "$(t settings_skipped)"; fi
-if [[ -n $PROJECT_DEFAULT ]]; then
-  PK_PROJECT=1 PK_DEFAULT=$PROJECT_DEFAULT cfg apply-settings "$PROJECT/.pi/settings.json" write
-  info "$(t project_trust)"
-fi
-
-if [[ -n $LOCAL_MODEL || -n $CLOUD_MODEL ]] && confirm "$(t aliases_q)" n; then
-  rc="$HOME/.bashrc"; [[ ${SHELL:-} == */zsh ]] && rc="$HOME/.zshrc"
-  block="# >>> fabeee-code >>>"$'\n'
-  [[ -n $LOCAL_MODEL ]] && block+="alias pil='pi --model $LOCAL_MODEL'"$'\n'
-  [[ -n $CLOUD_MODEL ]] && block+="alias pic='pi --model $CLOUD_MODEL:low'"$'\n'
-  block+="# <<< fabeee-code <<<"
-  if [[ $DRY_RUN == 1 ]]; then printf '%s+ %s%s\n%s\n' "$DIM" "$(t aliases_dry "$rc")" "$N" "$block"
-  else
-    [[ -f $rc ]] && sed -i.backup-"$FABEEE_CODE_STAMP" '/^# >>> fabeee-code >>>$/,/^# <<< fabeee-code <<<$/d' "$rc"
-    printf '\n%s\n' "$block" >> "$rc"
-    ok "$(t aliases_added "$rc")"
-  fi
-fi
+if confirm "$(t apply_q)" y; then cfg apply-settings "$SETTINGS" write; else warn "$(t settings_skipped)"; fi
 
 # ---------- 5. kit ----------
 step "$(t step_kit)"
 "$KIT/scripts/install.sh" skills "$PROJECT"
 if confirm "$(t gate_q)" y; then
-  "$KIT/scripts/install.sh" extension
+  "$KIT/scripts/install.sh" extension "$PROJECT"
 fi
 
 info ""
@@ -394,7 +416,7 @@ if confirm "$(t probe_q)" y; then
   fi
 fi
 confirm "$(t context7_q)" y && servers+=(context7)
-if [ "${#servers[@]}" -gt 0 ]; then cfg merge-mcp "$PI_DIR/mcp.json" "$KIT/config/mcp.json" "${servers[@]}"; fi
+if [ "${#servers[@]}" -gt 0 ]; then cfg merge-mcp "$PI_PROJECT/mcp.json" "$KIT/config/mcp.json" "${servers[@]}"; fi
 
 # ---------- 6. packages ----------
 step "$(t step_packages)"
@@ -402,7 +424,7 @@ warn "$(t packages_warn)"
 offer_tier() { # offer_tier TIER DEFAULT "question"
   if [[ $HAVE_PI == 0 ]]; then warn "$(t tier_skip "$1")"; return; fi
   if confirm "$3" "$2"; then
-    if "$KIT/scripts/install.sh" packages "$1"; then INSTALLED_PKGS+=" $1"
+    if "$KIT/scripts/install.sh" packages "$1" "$PROJECT"; then INSTALLED_PKGS+=" $1"
     else INSTALLED_PKGS+=" $1"; FAILED_TIERS+=" $1"; warn "$(t tier_failed "$1")"; fi
   fi
 }
@@ -444,24 +466,19 @@ else
 fi
 "$KIT/scripts/install.sh" context "$PROJECT"
 
-if ! grep -qx '.pi/handoff.md' .gitignore 2>/dev/null; then
-  if [[ $DRY_RUN == 1 ]]; then run "$(t gitignore_dry)"
-  else printf '.pi/handoff.md\n' >> .gitignore; ok "$(t gitignore_added)"; fi
-fi
+# Per-person files stay out of git: the handoff note and the downloaded packages.
+for entry in .pi/handoff.md .pi/npm/ .pi/git/; do
+  if ! grep -qxF "$entry" .gitignore 2>/dev/null; then
+    if [[ $DRY_RUN == 1 ]]; then run "$(t gitignore_dry "$entry")"
+    else printf '%s\n' "$entry" >> .gitignore; ok "$(t gitignore_added "$entry")"; fi
+  fi
+done
 
 # ---------- summary ----------
 step "$(t step_checks)"
 [[ -n $FAILED_TIERS ]] && warn "$(t tiers_failed_summary "${FAILED_TIERS# }")"
-if [[ $HAVE_PI == 1 && $DRY_RUN == 0 ]]; then
-  for p in $LOCAL_PROVIDER $CLOUD_PROVIDER; do
-    [[ $p == llama.cpp ]] && continue
-    if out=$(pi auth check --provider "$p" --json 2>/dev/null) && [[ $out == *'"ready"'* ]]; then ok "$(t creds_ready "$p")"
-    elif [[ $p == "$CLOUD_PROVIDER" && $CLOUD_LOGIN == 1 ]]; then warn "$(t not_logged_in "$p" "$p")"
-    else warn "$(t not_ready "$p" "$out")"; fi
-  done
-  if [[ -n $LOCAL_URL && $LOCAL_BACKEND != llamacpp ]]; then
-    if curl -s -m 3 -o /dev/null "$LOCAL_URL/models"; then ok "$(t local_ok "$LOCAL_URL")"; else warn "$(t local_no "$LOCAL_URL")"; fi
-  fi
+if [[ $DRY_RUN == 0 && -n $LOCAL_URL && $LOCAL_BACKEND != llamacpp ]]; then
+  if curl -s -m 3 -o /dev/null "$LOCAL_URL/models"; then ok "$(t local_ok "$LOCAL_URL")"; else warn "$(t local_no "$LOCAL_URL")"; fi
 fi
 
 step "$(t step_next)"
@@ -474,6 +491,8 @@ next "$(t next_map)"
 next "$(t next_mcp)"
 [[ $INSTALLED_PKGS == *core* ]] && next "$(t next_rtk)"
 [[ $INSTALLED_PKGS == *tokens* ]] && next "$(t next_caveman)"
+next "$(t next_commit)"
+info "   $(t next_team)"
 if [[ $LOCAL_BACKEND == omlx ]]; then
   info ""
   info "$(t omlx_tip1)"

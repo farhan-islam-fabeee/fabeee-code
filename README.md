@@ -22,7 +22,8 @@ config/models.cloud.example.json  OpenAI 互換クラウドプロバイダー用
 extensions/quality-gate.ts  エージェントの作業終了時にプロジェクトの高速チェックを実行し、失敗を差し戻す
 extensions/skills-global.ts pi の /skills-global コマンド: 選んだプロジェクトのスキルを ~/.agents/skills にコピー
 extensions/agents-md-only.ts pi が AGENTS.md だけを読むようにする（CLAUDE.md をコンテキストから除外）
-scripts/setup.sh            対話式セットアップ（プロジェクトフォルダーで実行）: pi のインストール、ローカル/クラウドの設定、キットの導入、プロジェクトの準備
+extensions/project-models.ts プロジェクトの .pi/models.json のプロバイダーを登録（pi は models.json をグローバルにしか読まないため）
+scripts/setup.sh            対話式セットアップ（プロジェクトフォルダーで実行）: pi の設定一式をプロジェクトに書き込む
 scripts/lib/pi-config.mjs   setup.sh が使う JSON/プロジェクト用ヘルパー（変更するファイルはすべてバックアップ）
 scripts/lib/i18n.sh         メッセージの読み込み。カタログは scripts/lib/lang/{en,ja,ko,bn}.txt
 scripts/lib/check-i18n.mjs  カタログのキーとプレースホルダーが揃っているかを確認（メッセージ編集後に実行）
@@ -52,22 +53,38 @@ less bootstrap.sh && bash bootstrap.sh
 
 リポジトリをクローン済みなら、プロジェクトのフォルダーから `scripts/setup.sh` を直接実行することもできます。
 
-最初に表示言語（English、日本語、한국어、বাংলা）を尋ねます。既定値はシステムのロケールで決まり、`--lang=ja`（または `FABEEE_CODE_LANG=ja`）を指定すると質問を省略できます。そのあと 7 つのステップを順に進め、変更の前には毎回確認します。
+最初に表示言語（English、日本語、한국어、বাংলা）を尋ねます。既定値はシステムのロケールで決まり、`--lang=ja`（または `FABEEE_CODE_LANG=ja`）を指定すると質問を省略できます。
+
+**設定はすべてプロジェクトに書き込みます。** 一度コミットすれば、チーム全員が同じセットアップを使えます。`~/.pi/agent` には、各マシンで pi 自体が必要とするもの以外は書き込みません。
+
+| プロジェクトに置くもの（コミットする） | 個人ごと（コミットしない） |
+|---|---|
+| `.pi/models.json`: モデルのプロバイダー。`.pi/extensions/project-models.ts` が読み込みます | API キー: macOS キーチェーン、環境変数、または pi の `/login`。`.pi/models.json` には `${VAR}` や `!security …` のような参照だけを書きます |
+| `.pi/settings.json`: デフォルトのモデル、思考レベル、codemode、圧縮、パッケージ | pi 本体 |
+| `.pi/mcp.json`: Probe と Context7 | `probe` コマンド |
+| `.pi/extensions/`: 品質ゲート、`/skills-global`、AGENTS.md 専用化、プロバイダー読み込み | `.pi/npm/`（ダウンロードしたパッケージ）と `.pi/handoff.md`。どちらも `.gitignore` に追加します |
+| `.agents/skills/`、`AGENTS.md`、`.pi/check` | |
+
+pi はプロジェクトを信頼したあとでのみ `.pi/` を読み込みます。初回起動時の信頼確認には「はい」と答えてください。
+
+すでにセットアップ済みのプロジェクト（チームメンバーがコミットした場合など）では、**「これを使う」**を選べます。プロジェクトには手を加えず、このマシンだけを準備します（pi、自分の API キー、`probe`）。プロジェクトのパッケージは pi の初回起動時にインストールされます。
+
+それ以外の場合は 7 つのステップを順に進め、変更の前には毎回確認します。
 
 1. **プロジェクト:** 対象フォルダーを確認します。
-2. **pi:** pi がなければインストールし（公式インストーラーまたは npm）、バージョンを確認します。
-3. **モデル:** ローカル、クラウド、または両方を選びます。
+2. **pi:** pi がなければインストールし（公式インストーラーまたは npm）、シェルから見つかるようにして、バージョンを確認します。
+3. **モデル:** ローカル、クラウド、または両方を選び、`.pi/models.json` に保存します。
    - **ローカル:** oMLX、Ollama、LM Studio、llama.cpp ルーター、または任意の OpenAI 互換サーバー。サーバーのモデル一覧から選べます。コンテキストウィンドウは、サーバーが*実際に*扱える値を尋ねます（oMLX の場合は `~/.omlx/settings.json` から読み取ります）。
    - **クラウド:** OpenRouter、DeepSeek、Z.ai、Moonshot、pi に組み込まれたその他のプロバイダー、または料金とキャッシュ保持時間を指定したカスタムの OpenAI 互換エンドポイント。
-   - **API キー:** macOS キーチェーン（pi がリクエストごとに `security` で読み取ります）、環境変数、pi の `/login`、ローカルサーバーの場合のみ平文、から保存先を選べます。
-4. **設定:** pi の設定（思考レベルは低め、codemode、ローカルのウィンドウに合わせた圧縮）を書き込み、デフォルトのモデル（全体またはこのプロジェクトのみ）を設定します。シェルのエイリアス `pil`/`pic` も追加できます。
-5. **キット:** スキルを**このプロジェクトに**（`.agents/skills/`）インストールし、`/skills-global` コマンド、品質ゲート、MCP サーバーの Probe と Context7 もインストールします。
-6. **パッケージ:** パッケージ群ごとに確認しながらインストールします。パッケージはコードを実行するため、それぞれ事前に確認します。
-7. **プロジェクトファイル:** git、`.pi/check`（package.json、Cargo、Go、Python から自動検出）、ひな形の `AGENTS.md`（なければ）、プロジェクトの `AGENTS.md` へのエージェントルールのセクション（再実行時はそのセクションだけを置き換え、ほかの内容はそのまま）、`.gitignore` を用意します。pi は `AGENTS.md` だけを読みます。インストールされる拡張機能が `CLAUDE.md` をコンテキストから除外します。`CLAUDE.md` がある場合は警告しますが、ファイル自体は変更しません。
+   - **API キー:** macOS キーチェーン（pi がリクエストごとに `security` で読み取ります）、環境変数、または pi の `/login`。ファイルを共有するため、平文で保存する選択肢はありません。
+4. **設定:** `.pi/settings.json`（思考レベルは低め、codemode、ローカルのウィンドウに合わせた圧縮）を、プロジェクトのデフォルトのモデルと一緒に書き込みます。
+5. **キット:** スキルを `.agents/skills/` に、`/skills-global` コマンドと品質ゲートを、MCP サーバーの Probe と Context7 を `.pi/mcp.json` にインストールします。
+6. **パッケージ:** パッケージ群ごとに確認し、`pi install -l` でインストールします（`.pi/settings.json` に記録されます）。パッケージはコードを実行するため、それぞれ事前に確認します。
+7. **プロジェクトファイル:** git、`.pi/check`（package.json、Cargo、Go、Python から自動検出）、ひな形の `AGENTS.md`（なければ）、`AGENTS.md` へのエージェントルールのセクション（再実行時はそのセクションだけを置き換え、ほかの内容はそのまま）、`.gitignore` を用意します。pi は `AGENTS.md` だけを読みます。インストールされる拡張機能が `CLAUDE.md` をコンテキストから除外します。`CLAUDE.md` がある場合は警告しますが、ファイル自体は変更しません。
 
-変更する pi の設定ファイルは、事前にすべてバックアップします（`<file>.backup-<timestamp>`）。何度実行しても安全です。`--dry-run` を付けると、同じ質問をしたうえで何も書き込みません。
+変更する設定ファイルは、事前にすべてバックアップします（`<file>.backup-<timestamp>`）。何度実行しても安全です。`--dry-run` を付けると、同じ質問をしたうえで何も書き込みません。
 
-手動で個別にインストールする場合は、`./scripts/install.sh all <project>` で指定したプロジェクトへのスキルとエージェントルール、拡張機能、MCP 設定を、`./scripts/install.sh packages <tier>` でパッケージ群を 1 つ（`core`、`tokens`、`ondemand`、`tuning`、`cloud`、`ab`）インストールします。[config/models.local.json](config/models.local.json) と [config/settings.json](config/settings.json) は、ご自身で `~/.pi/agent/` に統合してください（gameplan の Phase 0〜1）。
+手動で個別にインストールする場合は、`./scripts/install.sh all <project>` でスキル、ルール、拡張機能、MCP 設定をそのプロジェクトに、`./scripts/install.sh packages <tier> <project>` でパッケージ群を 1 つ（`core`、`tokens`、`ondemand`、`tuning`、`cloud`、`ab`）インストールします。[config/models.local.json](config/models.local.json) と [config/settings.json](config/settings.json) は、プロジェクトの `.pi/` にコピーして使える例です（gameplan の Phase 0〜1）。
 
 ## スキル
 

@@ -4,6 +4,8 @@
 **Harness:** pi 1.2.0 (`/opt/homebrew/bin/pi`)
 **Inference:** oMLX on `127.0.0.1:8000`, serving `Qwen3.8-27B-4bit`
 
+> **Note (2026-10-20):** `scripts/setup.sh` now writes this whole setup into the project (`.pi/models.json`, `.pi/settings.json`, `.pi/mcp.json`, `.pi/extensions/`, `.agents/skills/`, `AGENTS.md`) so a team shares it through git. The phases below still describe the settings themselves; where they say `~/.pi/agent/…`, the setup script uses the project's `.pi/…` instead.
+
 ## The one idea that drives every choice
 
 On Apple Silicon, **prefill (reading the prompt) is the bottleneck, not decode.** Every token of system prompt, tool definitions, skill list and tool output costs prefill time on every turn. oMLX's paged SSD KV cache hides most of that cost, but only while the **prompt prefix stays byte-identical** from turn to turn.

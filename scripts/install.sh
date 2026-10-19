@@ -1,23 +1,20 @@
 #!/usr/bin/env bash
-# Install parts of fabeee-code into your pi setup.
-# Never overwrites models.json or settings.json; existing extensions are backed up first.
+# Install parts of fabeee-code into a project, so the whole setup is committed and shared.
+# [project] defaults to the current folder. Nothing is written to ~/.pi/agent.
 #
-#   ./scripts/install.sh skills [project]    copy skills/* to <project>/.agents/skills/ (default: current folder)
-#                                            and the /skills-global pi command to ~/.pi/agent/extensions/
-#   ./scripts/install.sh context [project]   add/update the rules section (context/AGENTS.md) in <project>/AGENTS.md
-#                                            and the extension that makes pi ignore CLAUDE.md
-#   ./scripts/install.sh extension           copy extensions/quality-gate.ts to ~/.pi/agent/extensions/
-#   ./scripts/install.sh mcp                 copy config/mcp.json to ~/.pi/agent/mcp.json (only if absent)
-#   ./scripts/install.sh packages <tier>     pi install the packages in a tier (see TIERS below)
-#   ./scripts/install.sh all [project]       skills + rules + extension + mcp (no packages)
+#   ./scripts/install.sh skills [project]           skills/* -> .agents/skills/, /skills-global command
+#   ./scripts/install.sh context [project]          rules section in AGENTS.md, extension that hides CLAUDE.md
+#   ./scripts/install.sh models [project]           extension that loads .pi/models.json (project model providers)
+#   ./scripts/install.sh extension [project]        quality gate -> .pi/extensions/
+#   ./scripts/install.sh mcp [project]              config/mcp.json -> .pi/mcp.json (only if absent)
+#   ./scripts/install.sh packages <tier> [project]  pi install -l the packages in a tier (see tiers below)
+#   ./scripts/install.sh all [project]              skills + context + models + extension + mcp (no packages)
 #
 # Set DRY_RUN=1 to print actions without doing them. Messages follow FABEEE_CODE_LANG (en, ja, ko, bn).
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PI_DIR="${PI_CODING_AGENT_DIR:-${HOME}/.pi/agent}"
-STAMP="${FABEEE_CODE_STAMP:-$(date +%Y%m%d-%H%M%S)}"
 # shellcheck source=lib/i18n.sh
 source "$ROOT/scripts/lib/i18n.sh"
 set_lang "${FABEEE_CODE_LANG:-en}"
@@ -33,17 +30,17 @@ run() {
   if [[ "${DRY_RUN:-0}" == "1" ]]; then echo "+ $*"; else "$@"; fi
 }
 
-backup() {
-  local target="$1" backup_root="$2"
-  if [[ -e "$target" ]]; then
-    run mkdir -p "$backup_root"
-    run mv "$target" "$backup_root/"
-    t inst_backed_up "$(basename "$target")" "$backup_root"; echo
-  fi
+project_dir() { printf '%s' "${1:-${FABEEE_CODE_PROJECT:-$PWD}}"; }
+
+add_extension() { # add_extension PROJECT FILE
+  run mkdir -p "$1/.pi/extensions"
+  run cp "$ROOT/extensions/$2" "$1/.pi/extensions/$2"
 }
 
 install_skills() {
-  local target="${1:-${FABEEE_CODE_PROJECT:-$PWD}}/.agents/skills"
+  local project target
+  project=$(project_dir "${1:-}")
+  target="$project/.agents/skills"
   run mkdir -p "$target"
   for dir in "$ROOT"/skills/*/; do
     local name; name="$(basename "$dir")"
@@ -51,13 +48,13 @@ install_skills() {
     run cp -R "$dir" "$target/$name"
     t inst_skill "$name"; echo
   done
-  run mkdir -p "$PI_DIR/extensions"
-  run cp "$ROOT/extensions/skills-global.ts" "$PI_DIR/extensions/skills-global.ts"
+  add_extension "$project" skills-global.ts
   t inst_skills_done "$target"; echo
 }
 
 install_context() {
-  local project="${1:-${FABEEE_CODE_PROJECT:-$PWD}}" target
+  local project target
+  project=$(project_dir "${1:-}")
   target="$project/AGENTS.md"
   local begin="<!-- fabeee-code:rules -->" end="<!-- /fabeee-code:rules -->" tmp
   tmp=$(mktemp)
@@ -79,31 +76,34 @@ install_context() {
   fi
   rm -f "$tmp" "$tmp.new"
   # pi also reads CLAUDE.md; this extension drops it so AGENTS.md is the only context file.
-  run mkdir -p "$PI_DIR/extensions"
-  run cp "$ROOT/extensions/agents-md-only.ts" "$PI_DIR/extensions/agents-md-only.ts"
+  add_extension "$project" agents-md-only.ts
+}
+
+install_models() {
+  add_extension "$(project_dir "${1:-}")" project-models.ts
 }
 
 install_extension() {
-  run mkdir -p "$PI_DIR/extensions"
-  backup "$PI_DIR/extensions/quality-gate.ts" "$PI_DIR/extensions-backup-$STAMP"
-  run cp "$ROOT/extensions/quality-gate.ts" "$PI_DIR/extensions/quality-gate.ts"
+  add_extension "$(project_dir "${1:-}")" quality-gate.ts
   t inst_ext_done; echo
 }
 
 install_mcp() {
-  if [[ -e "$PI_DIR/mcp.json" ]]; then
-    t inst_mcp_exists "$PI_DIR/mcp.json"; echo
+  local file
+  file="$(project_dir "${1:-}")/.pi/mcp.json"
+  if [[ -e $file ]]; then
+    t inst_mcp_exists "$file"; echo
   else
-    run mkdir -p "$PI_DIR"
-    run cp "$ROOT/config/mcp.json" "$PI_DIR/mcp.json"
+    run mkdir -p "$(dirname "$file")"
+    run cp "$ROOT/config/mcp.json" "$file"
     t inst_mcp_done; echo
   fi
   command -v probe >/dev/null || { t inst_probe_missing; echo; }
-  t inst_mcp_check; echo
 }
 
 install_packages() {
-  local tier="${1:-}"
+  local tier="${1:-}" project
+  project=$(project_dir "${2:-}")
   case "$tier" in
     core|tokens|ondemand|tuning|cloud|ab) ;;
     *) { t inst_pkg_usage "$0"; echo; } >&2; exit 2 ;;
@@ -113,13 +113,14 @@ install_packages() {
   t inst_pkg_warn; echo
   local failed=()
   for pkg in "${pkgs[@]}"; do
-    # settings.json lists installed packages as "npm:<name>" or "npm:<name>@<version>"
-    if grep -q "\"npm:$pkg[\"@]" "$PI_DIR/settings.json" 2>/dev/null; then
+    # .pi/settings.json lists packages as "npm:<name>" or "npm:<name>@<version>"
+    if grep -q "\"npm:$pkg[\"@]" "$project/.pi/settings.json" 2>/dev/null; then
       t inst_pkg_skip "$pkg"; echo
       continue
     fi
-    # One failing package (for example a native module that won't build) must not stop the rest.
-    if ! run pi install "npm:$pkg"; then
+    # -l: declare in .pi/settings.json, download into .pi/npm/. --approve: trust the project for this
+    # command only. One failing package (e.g. a native module that won't build) must not stop the rest.
+    if ! (cd "$project" && run pi install -l --approve "npm:$pkg"); then
       failed+=("$pkg")
       t inst_pkg_failed "$pkg"; echo
     fi
@@ -133,9 +134,10 @@ install_packages() {
 case "${1:-}" in
   skills) install_skills "${2:-}" ;;
   context) install_context "${2:-}" ;;
-  extension) install_extension ;;
-  mcp) install_mcp ;;
-  packages) install_packages "${2:-}" ;;
-  all) install_skills "${2:-}"; install_context "${2:-}"; install_extension; install_mcp ;;
+  models) install_models "${2:-}" ;;
+  extension) install_extension "${2:-}" ;;
+  mcp) install_mcp "${2:-}" ;;
+  packages) install_packages "${2:-}" "${3:-}" ;;
+  all) install_skills "${2:-}"; install_context "${2:-}"; install_models "${2:-}"; install_extension "${2:-}"; install_mcp "${2:-}" ;;
   *) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

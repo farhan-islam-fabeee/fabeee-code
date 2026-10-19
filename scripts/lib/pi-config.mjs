@@ -6,6 +6,7 @@
 //   list-models <baseUrl>                    GET <baseUrl>/models (key in FABEEE_CODE_KEY), one id per line
 //   json-get <file> <dotted.path>            print a value, exit 1 if missing
 //   apply-settings <settings.json> preview|write   pi settings from PK_* env
+//   key-refs <models.json>                   print "<provider>\t<apiKey>" for each provider with a key
 //   merge-mcp <mcp.json> <kit mcp.json> <server...>  add the named servers if missing
 //   detect-check <dir>                       suggest a fast check command
 //   agents-template <dir> <check>            print a starter project AGENTS.md
@@ -129,15 +130,12 @@ function settingsPatch() {
     patch.defaultProvider = def.slice(0, i);
     patch.defaultModel = def.slice(i + 1);
   }
-  if (env("PK_PROJECT") === "1") return patch;
-
   Object.assign(patch, {
     defaultThinkingLevel: "low",
     defaultTools: ["read", "bash", "edit", "write", "+codemode"],
     codemode: { mode: "on", inlineBudget: 1500 },
     retry: { enabled: true, maxRetries: 2, provider: { maxRetries: 0 } },
     showCacheMissNotices: true,
-    enableInstallTelemetry: false,
   });
   const enabled = env("PK_ENABLED_MODELS");
   if (enabled) patch.enabledModels = enabled.split(",");
@@ -174,6 +172,12 @@ function applySettings(file, mode) {
     return;
   }
   writeJson(file, next);
+}
+
+function keyRefs(file) {
+  for (const [id, p] of Object.entries(readJson(file).providers || {})) {
+    if (p.apiKey) console.log(`${id}\t${p.apiKey}`);
+  }
 }
 
 function mergeMcp(file, kitFile, names) {
@@ -269,6 +273,7 @@ try {
     case "list-models": await listModels(args[0]); break;
     case "json-get": jsonGet(args[0], args[1]); break;
     case "apply-settings": applySettings(args[0], args[1]); break;
+    case "key-refs": keyRefs(args[0]); break;
     case "merge-mcp": mergeMcp(args[0], args[1], args.slice(2)); break;
     case "detect-check": console.log(detectCheck(args[0])); break;
     case "agents-template": agentsTemplate(args[0], args[1] || ""); break;

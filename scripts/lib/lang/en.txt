@@ -31,6 +31,17 @@ path_manual=Add this line to your shell profile: %s
 pi_too_old=pi %s is older than 1.0; this kit relies on pi 1.x (built-in MCP, codemode).
 pi_update_q=Update pi now (pi update self)?
 node_missing=Node.js not found. The pi installer normally provides it; re-run the installer.
+# existing project setup
+step_machine=This machine (the project is already set up)
+key_present=%s: key found in your Keychain
+key_store_q=%s: no key in your Keychain yet. Store it now?
+builtin_key_hint=The project uses %s by default. If you have no key for it yet, run /login %s in pi or set its environment variable.
+existing_setup=This project already has a pi setup in %s (shared through git).
+existing_q=What do you want to do?
+existing_use=Use it: only set up this machine (pi, your API keys, probe)
+existing_redo=Reconfigure the project (models, settings, skills, packages)
+next_commit=git add .pi .agents AGENTS.md .gitignore && git commit   share the setup with your team
+next_team=Teammates run the same one-liner in their clone and choose "Use it"; pi installs the packages on first start.
 # 3. models
 step_models=3/7 Models
 mode_q=Which models will you use?
@@ -70,7 +81,6 @@ key_where=Where should the API key for %s live?
 key_login=Log in inside pi later with /login %s (pi stores the key itself)
 key_keychain=macOS Keychain (pi reads it with the security command on each request)
 key_env=Environment variable $%s (you export it in your shell profile)
-key_plain=Plain text in models.json (only for a local server's key)
 key_dry=API key for %s (dry run: kept in memory only)
 key_twice=macOS will ask for the key twice (it is typed into the security tool, not this script).
 keychain_failed=Keychain write failed.
@@ -78,7 +88,6 @@ key_stored=Key stored in the login keychain as "%s".
 env_set=$%s is set in this shell.
 env_unset=$%s is not set. Add this to your shell profile: export %s=...
 key_paste=Paste the key to test it now (kept in memory only, Enter to skip)
-api_key=API key
 # model picker
 models_filter=%s models available. Filter by name (e.g. qwen, glm, kimi, deepseek)
 model_id=Model ID
@@ -107,21 +116,16 @@ cache_ttl_q=Prompt cache lifetime in seconds (0 if the provider doesn't cache)
 cloud_provider=Cloud provider: %s
 cloud_provider_model=Cloud provider: %s (model %s)
 # 4. settings
-step_settings=4/7 pi settings
-default_q=Which model should start by default?
-default_local=Local everywhere; cloud on demand (pi --model ...)
-default_project=Local by default, but cloud by default in this project
-default_cloud=Cloud everywhere
+step_settings=4/7 pi settings (this project)
+default_q=Which model should this project use by default?
+default_local=Local: %s (use the cloud with pi --model ...)
+default_cloud=Cloud: %s
 settings_changes=Changes to %s:
 settings_note=(low default thinking, codemode on, compaction sized to the local window, cache-miss notices on while tuning)
 apply_q=Apply these settings?
 settings_skipped=Settings left unchanged.
-project_trust=pi reads .pi/settings.json only after you trust the project (it asks on first run).
-aliases_q=Add shell aliases (pil = local, pic = cloud)?
-aliases_dry=write to %s:
-aliases_added=Aliases added to %s (open a new terminal to use them).
 # 5. kit
-step_kit=5/7 Skills, quality gate, MCP
+step_kit=5/7 Skills, quality gate, MCP (this project)
 gate_q=Install the quality-gate extension (re-runs .pi/check when the agent finishes)?
 mcp_title=MCP servers:
 probe_q=  Probe: local code search that returns whole functions (runs on your machine)?
@@ -129,7 +133,7 @@ probe_install_q=  Probe isn't installed. Run npm install -g @probelabs/probe@lat
 probe_later=  Install it later, or pi will report probe as disconnected.
 context7_q=  Context7: up-to-date library docs (remote; sends library names and queries to context7.com)?
 # 6. packages
-step_packages=6/7 pi packages
+step_packages=6/7 pi packages (this project)
 packages_warn=Packages run code with your permissions. Review them at https://pi.dev/packages/<name> first.
 tier_skip=Skipping %s: pi isn't installed (dry run).
 tier_core=core: pi-lens (diagnostics), cc-safety-net, rpiv-todo-lean, pi-rtk-optimizer (output compaction)?
@@ -152,13 +156,10 @@ agents_dry=write AGENTS.md:
 agents_created=AGENTS.md created. Fill in the TODO lines.
 agents_exists=Project already has an AGENTS.md; keeping its content.
 claude_ignored=CLAUDE.md found: pi will ignore it and read only AGENTS.md. Move anything you still need into AGENTS.md (CLAUDE.md is left as is).
-gitignore_dry=append .pi/handoff.md to .gitignore
-gitignore_added=.gitignore: added .pi/handoff.md
+gitignore_dry=append %s to .gitignore
+gitignore_added=.gitignore: added %s
 # summary
 step_checks=Checks
-creds_ready=%s: credentials ready
-not_logged_in=%s: not logged in yet (run /login %s in pi)
-not_ready=%s: not ready (%s)
 local_ok=local server answers at %s
 local_no=local server not answering at %s
 step_next=Next steps
@@ -174,16 +175,14 @@ omlx_tip2=and keep the SSD cache on (docs/gameplan.md, Phase 0.3).
 measure=Measure before adding more: docs/gameplan.md, Phase 6.
 dry_done=Dry run finished; nothing was changed.
 # install.sh
-inst_backed_up=  backed up %s -> %s/
 inst_skill=  skill: %s
 inst_skills_done=Skills installed in %s. In pi, /skills-global copies chosen ones to ~/.agents/skills for every project.
 inst_agents_same=  agent rules already up to date in %s
 inst_agents_done=  agent rules (language, terse internals) written to %s
-inst_ext_done=Extension installed. Add a one-line fast check to <project>/.pi/check to enable it per project.
+inst_ext_done=Quality gate installed in .pi/extensions. Put a one-line fast check in .pi/check to enable it.
 inst_mcp_exists=%s already exists; not overwriting. Merge config/mcp.json into it by hand.
-inst_mcp_done=MCP config installed.
+inst_mcp_done=MCP config written to .pi/mcp.json.
 inst_probe_missing=Note: 'probe' not on PATH. Run: npm install -g @probelabs/probe@latest
-inst_mcp_check=Check with: pi mcp list
 inst_pkg_usage=Usage: %s packages core|tokens|ondemand|tuning|cloud|ab
 inst_pkg_warn=Pi packages run code. Review each one's source before installing.
 inst_pkg_skip=  already installed: %s

@@ -31,6 +31,17 @@ path_manual=シェルのプロファイルにこの行を追加してくださ�
 pi_too_old=pi %s は 1.0 より古いバージョンです。このキットは pi 1.x（組み込み MCP、codemode）が前提です。
 pi_update_q=今すぐ pi を更新しますか（pi update self）？
 node_missing=Node.js が見つかりません。通常は pi のインストーラーが用意します。インストーラーを再実行してください。
+# existing project setup
+step_machine=このマシン（プロジェクトはセットアップ済み）
+key_present=%s: キーチェーンにキーがあります
+key_store_q=%s: キーチェーンにまだキーがありません。今すぐ保存しますか？
+builtin_key_hint=このプロジェクトはデフォルトで %s を使います。まだキーがない場合は、pi で /login %s を実行するか、環境変数を設定してください。
+existing_setup=このプロジェクトには %s に pi のセットアップがすでにあります（git で共有）。
+existing_q=どうしますか？
+existing_use=これを使う: このマシンだけを準備する（pi、自分の API キー、probe）
+existing_redo=プロジェクトを再設定する（モデル、設定、スキル、パッケージ）
+next_commit=git add .pi .agents AGENTS.md .gitignore && git commit   セットアップをチームと共有
+next_team=チームメンバーは自分のクローンで同じ 1 行を実行し、「これを使う」を選びます。パッケージは pi の初回起動時にインストールされます。
 # 3. models
 step_models=3/7 モデル
 mode_q=どのモデルを使いますか？
@@ -70,7 +81,6 @@ key_where=%s の API キーをどこに保存しますか？
 key_login=あとで pi の中で /login %s を実行してログインする（キーは pi が保存します）
 key_keychain=macOS キーチェーン（pi がリクエストごとに security コマンドで読み取ります）
 key_env=環境変数 $%s（シェルのプロファイルでご自身で export します）
-key_plain=models.json に平文で保存（ローカルサーバーのキー専用）
 key_dry=%s の API キー（ドライラン: メモリ上にのみ保持）
 key_twice=macOS がキーを2回尋ねます（このスクリプトではなく security ツールに入力されます）。
 keychain_failed=キーチェーンへの書き込みに失敗しました。
@@ -78,7 +88,6 @@ key_stored=キーをログインキーチェーンに "%s" として保存しま
 env_set=$%s はこのシェルで設定されています。
 env_unset=$%s が設定されていません。シェルのプロファイルに追加してください: export %s=...
 key_paste=今すぐテストする場合はキーを貼り付けてください（メモリ上にのみ保持。Enter でスキップ）
-api_key=API キー
 # model picker
 models_filter=モデルが %s 個あります。名前で絞り込んでください（例: qwen、glm、kimi、deepseek）
 model_id=モデル ID
@@ -107,21 +116,16 @@ cache_ttl_q=プロンプトキャッシュの保持時間（秒。キャッシ�
 cloud_provider=クラウドプロバイダー: %s
 cloud_provider_model=クラウドプロバイダー: %s（モデル %s）
 # 4. settings
-step_settings=4/7 pi の設定
-default_q=デフォルトで起動するモデルはどれにしますか？
-default_local=どこでもローカル。クラウドは必要なときだけ（pi --model ...）
-default_project=通常はローカル。ただしこのプロジェクトではクラウドをデフォルトにする
-default_cloud=どこでもクラウド
+step_settings=4/7 pi の設定（このプロジェクト）
+default_q=このプロジェクトでデフォルトに使うモデルはどれにしますか？
+default_local=ローカル: %s（クラウドは pi --model ... で使う）
+default_cloud=クラウド: %s
 settings_changes=%s への変更:
 settings_note=（思考レベルは低め、codemode 有効、圧縮はローカルのウィンドウに合わせて調整、調整中はキャッシュミス通知を表示）
 apply_q=この設定を適用しますか？
 settings_skipped=設定は変更していません。
-project_trust=pi は、プロジェクトを信頼したあとでのみ .pi/settings.json を読み込みます（初回起動時に確認されます）。
-aliases_q=シェルのエイリアスを追加しますか（pil = ローカル、pic = クラウド）？
-aliases_dry=%s への書き込み:
-aliases_added=%s にエイリアスを追加しました（新しいターミナルで使えます）。
 # 5. kit
-step_kit=5/7 スキル、品質ゲート、MCP
+step_kit=5/7 スキル、品質ゲート、MCP（このプロジェクト）
 gate_q=品質ゲート拡張機能をインストールしますか（エージェントの作業終了時に .pi/check を再実行します）？
 mcp_title=MCP サーバー:
 probe_q=  Probe（関数単位で結果を返すローカルのコード検索。お使いのマシン上で動作）を追加しますか？
@@ -129,7 +133,7 @@ probe_install_q=  Probe がインストールされていません。npm install
 probe_later=  あとでインストールしてください。それまで pi は probe を未接続と表示します。
 context7_q=  Context7（最新のライブラリドキュメント。リモートで、ライブラリ名と検索内容を context7.com に送信）を追加しますか？
 # 6. packages
-step_packages=6/7 pi パッケージ
+step_packages=6/7 pi パッケージ（このプロジェクト）
 packages_warn=パッケージはあなたの権限でコードを実行します。先に https://pi.dev/packages/<name> で内容を確認してください。
 tier_skip=%s をスキップします: pi がインストールされていません（ドライラン）。
 tier_core=core: pi-lens（診断）、cc-safety-net、rpiv-todo-lean、pi-rtk-optimizer（出力の圧縮）をインストールしますか？
@@ -152,13 +156,10 @@ agents_dry=AGENTS.md への書き込み:
 agents_created=AGENTS.md を作成しました。TODO の行を埋めてください。
 agents_exists=このプロジェクトにはすでに AGENTS.md があります。内容はそのまま残します。
 claude_ignored=CLAUDE.md があります。pi はこれを無視し、AGENTS.md だけを読み込みます。必要な内容は AGENTS.md に移してください（CLAUDE.md はそのまま残します）。
-gitignore_dry=.gitignore に .pi/handoff.md を追加
-gitignore_added=.gitignore: .pi/handoff.md を追加しました
+gitignore_dry=.gitignore に %s を追加
+gitignore_added=.gitignore: %s を追加しました
 # summary
 step_checks=確認
-creds_ready=%s: 認証情報の準備ができています
-not_logged_in=%s: まだログインしていません（pi で /login %s を実行してください）
-not_ready=%s: 準備ができていません（%s）
 local_ok=ローカルサーバーが %s で応答しています
 local_no=ローカルサーバーが %s で応答しません
 step_next=次のステップ
@@ -174,16 +175,14 @@ omlx_tip2=SSD キャッシュは有効のままにしてください（docs/game
 measure=さらに追加する前に計測してください: docs/gameplan.md、Phase 6。
 dry_done=ドライランが完了しました。何も変更していません。
 # install.sh
-inst_backed_up=  %s をバックアップしました -> %s/
 inst_skill=  スキル: %s
 inst_skills_done=スキルを %s にインストールしました。pi で /skills-global を実行すると、選んだスキルを ~/.agents/skills にコピーして全プロジェクトで使えます。
 inst_agents_same=  %s のエージェントルールはすでに最新です
 inst_agents_done=  エージェントルール（言語、簡潔な内部作業）を %s に書き込みました
-inst_ext_done=拡張機能をインストールしました。プロジェクトごとに <project>/.pi/check に1行の高速チェックを書くと有効になります。
+inst_ext_done=品質ゲートを .pi/extensions にインストールしました。.pi/check に1行の高速チェックを書くと有効になります。
 inst_mcp_exists=%s はすでに存在するため上書きしません。config/mcp.json の内容を手動で統合してください。
-inst_mcp_done=MCP 設定をインストールしました。
+inst_mcp_done=MCP 設定を .pi/mcp.json に書き込みました。
 inst_probe_missing=注意: 'probe' が PATH にありません。npm install -g @probelabs/probe@latest を実行してください。
-inst_mcp_check=確認方法: pi mcp list
 inst_pkg_usage=使い方: %s packages core|tokens|ondemand|tuning|cloud|ab
 inst_pkg_warn=pi パッケージはコードを実行します。インストール前にそれぞれのソースを確認してください。
 inst_pkg_skip=  インストール済み: %s
