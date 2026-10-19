@@ -114,4 +114,18 @@ Two side effects:
 - **Output language follows the instructions.** A Japanese skill tends to make the model write handoff files, MAP.md and scout replies in Japanese, so those cost extra tokens every time they're read back. On a local model that's also slower decode.
 - **pi's chars/4 estimate undercounts Japanese.** For these files it estimates 1,237 tokens against an actual 2,208 (44% low). For English it's 1,735 against 1,959 (11% low). That estimate is used for `codemode.inlineBudget` and compaction cut points, so Japanese-heavy context is larger than pi thinks.
 
-Not measured: cloud tokenizers (OpenAI, Claude, DeepSeek and others). Other tokenizers will give different numbers, so measure on the model you actually use.
+### Cloud tokenizers (2026-10-19)
+
+Same files, counted with each provider's published tokenizer (downloaded from OpenAI's tiktoken storage and the official Hugging Face repos):
+
+| Tokenizer | Descriptions EN → JA | Full files EN → JA | Range per skill (full file) |
+|---|---|---|---|
+| Qwen3.8 (local) | 210 → 250 (**+19%**) | 1,959 → 2,208 (**+13%**) | +5% to +23% |
+| OpenAI o200k (GPT-4o and later) | 206 → 350 (**+70%**) | 1,846 → 2,508 (**+36%**) | +25% to +53% |
+| DeepSeek V4.1 | 209 → 327 (**+56%**) | 1,892 → 2,457 (**+30%**) | +19% to +44% |
+| GLM-5.3 (Z.ai) | 210 → 340 (**+62%**) | 1,863 → 2,492 (**+34%**) | +22% to +53% |
+| Kimi K3 (Moonshot) | 202 → 346 (**+71%**) | 1,832 → 2,473 (**+35%**) | +24% to +59% |
+
+**Japanese costs more on every tokenizer, and 2–4× more extra on the cloud ones than on Qwen.** The English counts are almost identical across tokenizers (about 1,830–1,960). Qwen's vocabulary handles Japanese unusually well, while the cloud tokenizers split it into far more pieces. On a cloud bill, Japanese descriptions add about 120–145 input tokens to **every** request, and each full skill load adds about 30–36%. Output costs more again: Japanese replies, handoff files and scout summaries carry the same overhead, billed at output prices.
+
+Not measured: Claude and Gemini. Neither publishes a tokenizer; counting needs their token-count APIs and an API key. Reproduce with `scripts/count_tokens.py` (usage is in its docstring).
