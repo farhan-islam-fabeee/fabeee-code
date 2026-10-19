@@ -9,4 +9,5 @@
 
 ### Internal work
 - Thinking, plans, scratch notes, subagent tasks and subagent replies, codemode scripts, and agent working files (`.pi/MAP.md`, `.pi/handoff.md`, `.pi/notes/`): **terse English**. Fragments are fine. No filler, no restating the task, no recap of what you just did.
+- **Agent instructions are always English**, whatever the language rules above say: any change you make to AGENTS.md (including `.pi/AGENTS.md`) and any skill you create or edit (`SKILL.md` and its files). They are loaded into context on every turn or skill use, so English keeps them cheapest.
 - English costs the fewest tokens on every tokenizer measured, so use it internally even though replies are in Japanese.
