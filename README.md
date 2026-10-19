@@ -61,13 +61,13 @@ less bootstrap.sh && bash bootstrap.sh
 |---|---|
 | `.pi/models.json`: モデルのプロバイダー。`.pi/extensions/project-models.ts` が読み込みます | API キー: macOS キーチェーン、環境変数、または pi の `/login`。`.pi/models.json` には `${VAR}` や `!security …` のような参照だけを書きます |
 | `.pi/settings.json`: デフォルトのモデル、思考レベル、codemode、圧縮、パッケージ | pi 本体 |
-| `.pi/mcp.json`: Probe と Context7 | `probe` コマンド |
+| `.pi/mcp.json`: Probe と Context7 | `probe` と `rtk` コマンド（`pi-rtk-optimizer` を使う場合、セットアップが Homebrew で `rtk` をインストール） |
 | `.pi/extensions/`: 品質ゲート、`/skills-global`、`.pi/AGENTS.md` の読み込み、プロバイダー読み込み | `.pi/npm/`（ダウンロードしたパッケージ）と `.pi/handoff.md`。どちらも `.gitignore` に追加します |
 | `.pi/skills/`、`.pi/AGENTS.md`、`.pi/check` | |
 
 pi はプロジェクトを信頼したあとでのみ `.pi/` を読み込みます。初回起動時の信頼確認には「はい」と答えてください。
 
-すでにセットアップ済みのプロジェクト（チームメンバーがコミットした場合など）では、**「これを使う」**を選べます。プロジェクトには手を加えず、このマシンだけを準備します（pi、自分の API キー、`probe`）。プロジェクトのパッケージは pi の初回起動時にインストールされます。
+すでにセットアップ済みのプロジェクト（チームメンバーがコミットした場合など）では、**「これを使う」**を選べます。プロジェクトには手を加えず、このマシンだけを準備します（pi、自分の API キー、`probe`、`rtk`）。プロジェクトのパッケージは pi の初回起動時にインストールされます。
 
 それ以外の場合は 7 つのステップを順に進め、変更の前には毎回確認します。
 

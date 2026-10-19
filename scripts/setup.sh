@@ -228,6 +228,24 @@ if [[ $HAVE_PI == 1 ]]; then
 fi
 find_node || die "$(t node_missing)"
 
+# ---------- rtk (used by pi-rtk-optimizer to rewrite commands) ----------
+# Per-machine program, like probe. pi-rtk-optimizer calls `rtk rewrite` itself, so `rtk init`
+# (hooks for other agents) is not needed.
+ensure_rtk() {
+  if command -v rtk >/dev/null 2>&1 && rtk --help 2>&1 | grep -q gain; then
+    ok "$(t rtk_found "$(rtk --version 2>/dev/null | head -n 1)")"; return
+  fi
+  if ! confirm "$(t rtk_install_q)" y; then warn "$(t rtk_later)"; return; fi
+  if command -v brew >/dev/null 2>&1; then run brew install rtk || warn "$(t rtk_failed)"
+  else run sh -c 'curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh' || warn "$(t rtk_failed)"; fi
+  hash -r
+  [[ $DRY_RUN == 1 ]] && return
+  # Another, unrelated "rtk" exists on crates.io; the right one has the `gain` subcommand.
+  if ! command -v rtk >/dev/null 2>&1; then warn "$(t rtk_not_on_path)"
+  elif rtk --help 2>&1 | grep -q gain; then ok "$(t rtk_found "$(rtk --version 2>/dev/null | head -n 1)")"
+  else warn "$(t rtk_wrong)"; fi
+}
+
 # ---------- existing project setup: only prepare this machine ----------
 # A teammate cloned a project that is already set up. Everything shared is in the repo; what each
 # person still needs is pi (step 2), their own API keys and the probe binary.
@@ -249,6 +267,7 @@ machine_setup() {
   done 3< <(cfg key-refs "$MODELS" 2>/dev/null || true)
   def=$(cfg json-get "$SETTINGS" defaultProvider 2>/dev/null || true)
   if [[ -n $def ]] && ! cfg has-provider "$MODELS" "$def" 2>/dev/null; then info "$(t builtin_key_hint "$def" "$def")"; fi
+  grep -qs 'pi-rtk-optimizer' "$SETTINGS" && ensure_rtk
   if grep -qs '"probe"' "$PI_PROJECT/mcp.json" && ! command -v probe >/dev/null 2>&1; then
     confirm "$(t probe_install_q)" y && run npm install -g @probelabs/probe@latest
   fi
@@ -448,6 +467,7 @@ offer_tier() { # offer_tier TIER DEFAULT "question"
   fi
 }
 offer_tier core y "$(t tier_core)"
+[[ $INSTALLED_PKGS == *core* ]] && ensure_rtk
 offer_tier tokens y "$(t tier_tokens)"
 offer_tier ondemand y "$(t tier_ondemand)"
 if [[ $USE_CLOUD == 1 ]]; then

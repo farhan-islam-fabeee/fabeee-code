@@ -61,13 +61,13 @@ It first asks for a display language: English, 日本語, 한국어 or বাং
 |---|---|
 | `.pi/models.json`: model providers, loaded by `.pi/extensions/project-models.ts` | API keys: macOS Keychain, an environment variable, or pi's `/login`. `.pi/models.json` only holds a reference such as `${VAR}` or `!security …` |
 | `.pi/settings.json`: default model, thinking level, codemode, compaction, packages | pi itself |
-| `.pi/mcp.json`: Probe and Context7 | the `probe` program |
+| `.pi/mcp.json`: Probe and Context7 | the `probe` and `rtk` programs (setup installs `rtk` with Homebrew when `pi-rtk-optimizer` is used) |
 | `.pi/extensions/`: quality gate, `/skills-global`, `.pi/AGENTS.md` loader, provider loader | `.pi/npm/` (downloaded packages) and `.pi/handoff.md`, both added to `.gitignore` |
 | `.pi/skills/`, `.pi/AGENTS.md`, `.pi/check` | |
 
 pi loads `.pi/` only after you trust the project, so answer yes to its trust prompt on first start.
 
-In a project that's already set up (for example after a teammate committed it), setup offers **"Use it"**: it only prepares your machine (pi, your own API keys, `probe`) and leaves the project as it is. pi installs the project's packages on first start.
+In a project that's already set up (for example after a teammate committed it), setup offers **"Use it"**: it only prepares your machine (pi, your own API keys, `probe`, `rtk`) and leaves the project as it is. pi installs the project's packages on first start.
 
 Otherwise it walks through 7 steps and asks before each change:
 
