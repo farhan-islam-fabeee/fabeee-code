@@ -171,7 +171,7 @@ dry_done=Dry run finished; nothing was changed.
 # install.sh
 inst_backed_up=  backed up %s -> %s/
 inst_skill=  skill: %s
-inst_skills_done=Skills installed. Run /reload in an open pi session.
+inst_skills_done=Skills installed in %s. In pi, /skills-global copies chosen ones to ~/.agents/skills for every project.
 inst_agents_same=  AGENTS.md already up to date
 inst_agents_backup=  backed up existing AGENTS.md -> %s (merge any rules you still want)
 inst_agents_done=  global rules: %s

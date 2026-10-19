@@ -171,7 +171,7 @@ dry_done=드라이 런이 끝났습니다. 아무것도 변경하지 않았습�
 # install.sh
 inst_backed_up=  %s 백업 -> %s/
 inst_skill=  스킬: %s
-inst_skills_done=스킬을 설치했습니다. 열려 있는 pi 세션에서는 /reload를 실행하세요.
+inst_skills_done=스킬을 %s에 설치했습니다. pi에서 /skills-global을 실행하면 선택한 스킬을 ~/.agents/skills에 복사해 모든 프로젝트에서 쓸 수 있습니다.
 inst_agents_same=  AGENTS.md가 이미 최신입니다
 inst_agents_backup=  기존 AGENTS.md 백업 -> %s (유지하려는 규칙은 병합하세요)
 inst_agents_done=  전역 규칙: %s

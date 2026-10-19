@@ -20,6 +20,7 @@ config/settings.json        pi の設定: 思考レベル低め、codemode、32k
 config/mcp.json             Probe（ローカルのコード検索）と Context7（ドキュメント）
 config/models.cloud.example.json  OpenAI 互換クラウドプロバイダー用のテンプレート
 extensions/quality-gate.ts  エージェントの作業終了時にプロジェクトの高速チェックを実行し、失敗を差し戻す
+extensions/skills-global.ts pi の /skills-global コマンド: 選んだプロジェクトのスキルを ~/.agents/skills にコピー
 scripts/setup.sh            対話式セットアップ（プロジェクトフォルダーで実行）: pi のインストール、ローカル/クラウドの設定、キットの導入、プロジェクトの準備
 scripts/lib/pi-config.mjs   setup.sh が使う JSON/プロジェクト用ヘルパー（変更するファイルはすべてバックアップ）
 scripts/lib/i18n.sh         メッセージの読み込み。カタログは scripts/lib/lang/{en,ja,ko,bn}.txt
@@ -59,15 +60,17 @@ less bootstrap.sh && bash bootstrap.sh
    - **クラウド:** OpenRouter、DeepSeek、Z.ai、Moonshot、pi に組み込まれたその他のプロバイダー、または料金とキャッシュ保持時間を指定したカスタムの OpenAI 互換エンドポイント。
    - **API キー:** macOS キーチェーン（pi がリクエストごとに `security` で読み取ります）、環境変数、pi の `/login`、ローカルサーバーの場合のみ平文、から保存先を選べます。
 4. **設定:** pi の設定（思考レベルは低め、codemode、ローカルのウィンドウに合わせた圧縮）を書き込み、デフォルトのモデル（全体またはこのプロジェクトのみ）を設定します。シェルのエイリアス `pil`/`pic` も追加できます。
-5. **キット:** スキル、グローバルの `AGENTS.md`、品質ゲート、MCP サーバーの Probe と Context7 をインストールします。
+5. **キット:** スキルを**このプロジェクトに**（`.agents/skills/`）インストールし、グローバルの `AGENTS.md`、`/skills-global` コマンド、品質ゲート、MCP サーバーの Probe と Context7 もインストールします。
 6. **パッケージ:** パッケージ群ごとに確認しながらインストールします。パッケージはコードを実行するため、それぞれ事前に確認します。
 7. **プロジェクトファイル:** git、`.pi/check`（package.json、Cargo、Go、Python から自動検出）、ひな形の `AGENTS.md`、`.gitignore` を用意します。
 
 変更する pi の設定ファイルは、事前にすべてバックアップします（`<file>.backup-<timestamp>`）。何度実行しても安全です。`--dry-run` を付けると、同じ質問をしたうえで何も書き込みません。
 
-手動で個別にインストールする場合は、`./scripts/install.sh all` でスキル、`AGENTS.md`、拡張機能、MCP 設定を、`./scripts/install.sh packages <tier>` でパッケージ群を 1 つ（`core`、`tokens`、`ondemand`、`tuning`、`cloud`、`ab`）インストールします。[config/models.local.json](config/models.local.json) と [config/settings.json](config/settings.json) は、ご自身で `~/.pi/agent/` に統合してください（gameplan の Phase 0〜1）。
+手動で個別にインストールする場合は、`./scripts/install.sh all <project>` で指定したプロジェクトへのスキル、`AGENTS.md`、拡張機能、MCP 設定を、`./scripts/install.sh packages <tier>` でパッケージ群を 1 つ（`core`、`tokens`、`ondemand`、`tuning`、`cloud`、`ab`）インストールします。[config/models.local.json](config/models.local.json) と [config/settings.json](config/settings.json) は、ご自身で `~/.pi/agent/` に統合してください（gameplan の Phase 0〜1）。
 
 ## スキル
+
+スキルはプロジェクトごとに `.agents/skills/` へインストールします。すべてのプロジェクトで使いたいスキルは、pi で `/skills-global` を実行して選ぶと（すべて選ぶことも可能）、`~/.agents/skills/` にコピーされます。`/skills-global handoff resume` のように名前を指定して直接コピーすることもできます。
 
 | スキル | トークンを節約する方法 |
 |---|---|

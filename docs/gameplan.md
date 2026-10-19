@@ -235,10 +235,10 @@ These target the four places tokens go: **reading code, command output, multi-st
 Install:
 
 ```bash
-./scripts/install.sh skills
+./scripts/install.sh skills ~/path/to/project
 ```
 
-This copies each skill to `~/.agents/skills/`, backing up any skill with the same name first. It also installs [`context/AGENTS.md`](../context/AGENTS.md) as the global `~/.pi/agent/AGENTS.md`, which pi loads into every session. Comments, commit messages, design docs and replies to the user are in Japanese unless told otherwise. Internal work, including the agent's own working files (`.pi/MAP.md`, `.pi/handoff.md`, `.pi/notes/`), uses terse English, which measured cheapest on every tokenizer tested (see [research](research.md)). An existing global `AGENTS.md` is backed up first. Then add `.pi/handoff.md` to each project's `.gitignore`. Commit `.pi/MAP.md` and `.pi/notes/` if the team uses pi.
+This copies each skill into the project's `.agents/skills/` (pi loads project skills after you trust the project; commit them so the team gets them too). To use a skill in every project, run `/skills-global` in pi: it copies the skills you pick, or all of them, to `~/.agents/skills/`. `scripts/install.sh context` (run by setup) installs [`context/AGENTS.md`](../context/AGENTS.md) as the global `~/.pi/agent/AGENTS.md`, which pi loads into every session. Comments, commit messages, design docs and replies to the user are in Japanese unless told otherwise. Internal work, including the agent's own working files (`.pi/MAP.md`, `.pi/handoff.md`, `.pi/notes/`), uses terse English, which measured cheapest on every tokenizer tested (see [research](research.md)). An existing global `AGENTS.md` is backed up first. Then add `.pi/handoff.md` to each project's `.gitignore`. Commit `.pi/MAP.md` and `.pi/notes/` if the team uses pi.
 
 ### 3b. Quality skills (write these next)
 
@@ -449,7 +449,7 @@ Merge this into `~/.pi/agent/models.json` next to `omlx` (full file: [`config/mo
 - [ ] Baseline run of 3 tasks
 - [ ] Tier A: pi-lens (errors only), cc-safety-net, rpiv-todo-lean, pi-rtk-optimizer (read compaction off)
 - [ ] Tier D: pi-vcc, pi-prefix-stabilizer, pi-caveman (lite), pi-context-view while tuning; A/B pi-hashline-edit-pro
-- [ ] Token skills: copy `skills/` → `~/.agents/skills/` (lean-read, quiet-shell, batch-tools, delegate-scout, project-map, handoff, resume, docs-lookup)
+- [ ] Token skills: copy `skills/` → `<project>/.agents/skills/` (lean-read, quiet-shell, batch-tools, delegate-scout, project-map, handoff, resume, docs-lookup); `/skills-global` for any you want everywhere
 - [ ] Quality skills: verify, bugfix-tdd, self-review, commit + per-project AGENTS.md
 - [ ] MCP: Probe (global install, direct search/extract) + Context7 (direct) via `config/mcp.json`; Serena only for large repos; Playwright only for frontend
 - [ ] Per project: run `project-map` once; add `.pi/handoff.md` to `.gitignore`

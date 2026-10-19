@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 # Install parts of fabeee-code into your pi setup.
-# Never overwrites models.json or settings.json; existing skills, extensions and AGENTS.md are backed up first.
+# Never overwrites models.json or settings.json; existing extensions and AGENTS.md are backed up first.
 #
-#   ./scripts/install.sh skills              copy skills/* to ~/.agents/skills/ and context/AGENTS.md to ~/.pi/agent/
+#   ./scripts/install.sh skills [project]    copy skills/* to <project>/.agents/skills/ (default: current folder)
+#                                            and the /skills-global pi command to ~/.pi/agent/extensions/
 #   ./scripts/install.sh context             only install context/AGENTS.md (global rules: language, terse internals)
 #   ./scripts/install.sh extension           copy extensions/quality-gate.ts to ~/.pi/agent/extensions/
 #   ./scripts/install.sh mcp                 copy config/mcp.json to ~/.pi/agent/mcp.json (only if absent)
 #   ./scripts/install.sh packages <tier>     pi install the packages in a tier (see TIERS below)
-#   ./scripts/install.sh all                 skills + extension + mcp (no packages)
+#   ./scripts/install.sh all [project]       skills + context + extension + mcp (no packages)
 #
 # Set DRY_RUN=1 to print actions without doing them. Messages follow FABEEE_CODE_LANG (en, ja, ko, bn).
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SKILLS_DIR="${HOME}/.agents/skills"
 PI_DIR="${PI_CODING_AGENT_DIR:-${HOME}/.pi/agent}"
 STAMP="${FABEEE_CODE_STAMP:-$(date +%Y%m%d-%H%M%S)}"
 # shellcheck source=lib/i18n.sh
@@ -42,15 +42,17 @@ backup() {
 }
 
 install_skills() {
-  run mkdir -p "$SKILLS_DIR"
+  local target="${1:-${FABEEE_CODE_PROJECT:-$PWD}}/.agents/skills"
+  run mkdir -p "$target"
   for dir in "$ROOT"/skills/*/; do
     local name; name="$(basename "$dir")"
-    backup "$SKILLS_DIR/$name" "${SKILLS_DIR}-backup-$STAMP"
-    run cp -R "$dir" "$SKILLS_DIR/$name"
+    run rm -rf "$target/$name"
+    run cp -R "$dir" "$target/$name"
     t inst_skill "$name"; echo
   done
-  t inst_skills_done; echo
-  install_context
+  run mkdir -p "$PI_DIR/extensions"
+  run cp "$ROOT/extensions/skills-global.ts" "$PI_DIR/extensions/skills-global.ts"
+  t inst_skills_done "$target"; echo
 }
 
 install_context() {
@@ -117,11 +119,11 @@ install_packages() {
 }
 
 case "${1:-}" in
-  skills) install_skills ;;
+  skills) install_skills "${2:-}" ;;
   context) install_context ;;
   extension) install_extension ;;
   mcp) install_mcp ;;
   packages) install_packages "${2:-}" ;;
-  all) install_skills; install_extension; install_mcp ;;
+  all) install_skills "${2:-}"; install_context; install_extension; install_mcp ;;
   *) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

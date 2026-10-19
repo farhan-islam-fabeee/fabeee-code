@@ -20,6 +20,7 @@ config/settings.json        pi settings: low thinking, codemode, compaction size
 config/mcp.json             Probe (local code search) + Context7 (docs)
 config/models.cloud.example.json  template for any OpenAI-compatible cloud provider
 extensions/quality-gate.ts  runs the project's fast check when the agent finishes and feeds failures back
+extensions/skills-global.ts /skills-global pi command: copies chosen project skills to ~/.agents/skills
 scripts/setup.sh            guided setup, run from a project folder: installs pi, configures local/cloud, installs the kit, prepares the project
 scripts/lib/pi-config.mjs   JSON/project helper used by setup.sh (backs up every file it changes)
 scripts/lib/i18n.sh         message loader; catalogs in scripts/lib/lang/{en,ja,ko,bn}.txt
@@ -59,15 +60,17 @@ It first asks for a display language: English, 日本語, 한국어 or বাং
    - **Cloud:** OpenRouter, DeepSeek, Z.ai, Moonshot, the other providers built into pi, or a custom OpenAI-compatible endpoint with prices and cache lifetime.
    - **API keys:** store them in the macOS Keychain (pi runs `security` on each request), in an environment variable, with pi's own `/login`, or, for a local server only, as plain text.
 4. **Settings:** writes pi's settings (low thinking by default, codemode, compaction sized to the local window), sets the default model (globally or for this project only), and can add `pil`/`pic` shell aliases.
-5. **Kit:** installs the skills, the global `AGENTS.md`, the quality gate, and the Probe and Context7 MCP servers.
+5. **Kit:** installs the skills **into this project** (`.agents/skills/`), the global `AGENTS.md`, the `/skills-global` command, the quality gate, and the Probe and Context7 MCP servers.
 6. **Packages:** offers each package tier separately. Every package runs code, so each one asks first.
 7. **Project files:** sets up git, `.pi/check` (detected from package.json, Cargo, Go or Python), a starter `AGENTS.md`, and `.gitignore`.
 
 Every pi config file it changes is backed up first (`<file>.backup-<timestamp>`), and it's safe to re-run. `--dry-run` asks the same questions but writes nothing.
 
-To install pieces by hand instead, `./scripts/install.sh all` installs the skills, `AGENTS.md`, the extension and the MCP config, and `./scripts/install.sh packages <tier>` installs one tier (`core`, `tokens`, `ondemand`, `tuning`, `cloud`, `ab`). Merge [config/models.local.json](config/models.local.json) and [config/settings.json](config/settings.json) into `~/.pi/agent/` yourself (gameplan Phase 0–1).
+To install pieces by hand instead, `./scripts/install.sh all <project>` installs the skills into that project, `AGENTS.md`, the extension and the MCP config, and `./scripts/install.sh packages <tier>` installs one tier (`core`, `tokens`, `ondemand`, `tuning`, `cloud`, `ab`). Merge [config/models.local.json](config/models.local.json) and [config/settings.json](config/settings.json) into `~/.pi/agent/` yourself (gameplan Phase 0–1).
 
 ## Skills
+
+Skills are installed per project in `.agents/skills/`. To make one available everywhere, run `/skills-global` in pi and pick it (or all of them); it's copied to `~/.agents/skills/`. `/skills-global handoff resume` copies those two directly.
 
 | Skill | Saves tokens by |
 |---|---|

@@ -363,7 +363,8 @@ fi
 
 # ---------- 5. kit ----------
 step "$(t step_kit)"
-"$KIT/scripts/install.sh" skills
+"$KIT/scripts/install.sh" skills "$PROJECT"
+"$KIT/scripts/install.sh" context
 if confirm "$(t gate_q)" y; then
   "$KIT/scripts/install.sh" extension
 fi

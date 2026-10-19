@@ -171,7 +171,7 @@ dry_done=ড্রাই রান শেষ; কিছুই বদলানো
 # install.sh
 inst_backed_up=  %s ব্যাকআপ করা হয়েছে -> %s/
 inst_skill=  স্কিল: %s
-inst_skills_done=স্কিল ইনস্টল হয়েছে। খোলা pi সেশনে /reload চালান।
+inst_skills_done=স্কিল %s-এ ইনস্টল হয়েছে। pi-তে /skills-global চালালে বেছে নেওয়া স্কিল ~/.agents/skills-এ কপি হবে, যাতে সব প্রজেক্টে ব্যবহার করা যায়।
 inst_agents_same=  AGENTS.md ইতিমধ্যে হালনাগাদ
 inst_agents_backup=  বিদ্যমান AGENTS.md ব্যাকআপ করা হয়েছে -> %s (যে নিয়মগুলো রাখতে চান সেগুলো মিলিয়ে নিন)
 inst_agents_done=  গ্লোবাল নিয়ম: %s

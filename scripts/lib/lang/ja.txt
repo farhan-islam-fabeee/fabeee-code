@@ -171,7 +171,7 @@ dry_done=ドライランが完了しました。何も変更していません�
 # install.sh
 inst_backed_up=  %s をバックアップしました -> %s/
 inst_skill=  スキル: %s
-inst_skills_done=スキルをインストールしました。開いている pi セッションでは /reload を実行してください。
+inst_skills_done=スキルを %s にインストールしました。pi で /skills-global を実行すると、選んだスキルを ~/.agents/skills にコピーして全プロジェクトで使えます。
 inst_agents_same=  AGENTS.md はすでに最新です
 inst_agents_backup=  既存の AGENTS.md をバックアップしました -> %s（残したいルールは統合してください）
 inst_agents_done=  グローバルルール: %s
