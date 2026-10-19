@@ -40,7 +40,7 @@ existing_setup=This project already has a pi setup in %s (shared through git).
 existing_q=What do you want to do?
 existing_use=Use it: only set up this machine (pi, your API keys, probe)
 existing_redo=Reconfigure the project (models, settings, skills, packages)
-next_commit=git add .pi .agents AGENTS.md .gitignore && git commit   share the setup with your team
+next_commit=git add .pi .gitignore && git commit   share the setup with your team
 next_team=Teammates run the same one-liner in their clone and choose "Use it"; pi installs the packages on first start.
 # 3. models
 step_models=3/7 Models
@@ -151,11 +151,10 @@ check_replace_q=Replace the existing .pi/check (%s)?
 check_q=Fast check command for the quality gate (Enter to skip)
 check_dry=write .pi/check: %s
 check_written=.pi/check: %s
-agents_q=Create a starter AGENTS.md for this project (short, English, with detected commands)?
-agents_dry=write AGENTS.md:
-agents_created=AGENTS.md created. Fill in the TODO lines.
-agents_exists=Project already has an AGENTS.md; keeping its content.
-claude_ignored=CLAUDE.md found: pi will ignore it and read only AGENTS.md. Move anything you still need into AGENTS.md (CLAUDE.md is left as is).
+agents_q=Create a starter .pi/AGENTS.md for this project (short, English, with detected commands)?
+agents_dry=write .pi/AGENTS.md:
+agents_created=.pi/AGENTS.md created. Fill in the TODO lines.
+agents_exists=Project already has a .pi/AGENTS.md; keeping its content.
 gitignore_dry=append %s to .gitignore
 gitignore_added=.gitignore: added %s
 # summary
@@ -176,7 +175,7 @@ measure=Measure before adding more: docs/gameplan.md, Phase 6.
 dry_done=Dry run finished; nothing was changed.
 # install.sh
 inst_skill=  skill: %s
-inst_skills_done=Skills installed in %s. In pi, /skills-global copies chosen ones to ~/.agents/skills for every project.
+inst_skills_done=Skills installed in %s. In pi, /skills-global copies chosen ones to ~/.pi/agent/skills for every project.
 inst_agents_same=  agent rules already up to date in %s
 inst_agents_done=  agent rules (language, terse internals) written to %s
 inst_ext_done=Quality gate installed in .pi/extensions. Put a one-line fast check in .pi/check to enable it.

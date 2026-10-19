@@ -2,8 +2,8 @@
 # Install parts of fabeee-code into a project, so the whole setup is committed and shared.
 # [project] defaults to the current folder. Nothing is written to ~/.pi/agent.
 #
-#   ./scripts/install.sh skills [project]           skills/* -> .agents/skills/, /skills-global command
-#   ./scripts/install.sh context [project]          rules section in AGENTS.md, extension that hides CLAUDE.md
+#   ./scripts/install.sh skills [project]           skills/* -> .pi/skills/, /skills-global command
+#   ./scripts/install.sh context [project]          rules section in .pi/AGENTS.md, extension that makes pi read it
 #   ./scripts/install.sh models [project]           extension that loads .pi/models.json (project model providers)
 #   ./scripts/install.sh extension [project]        quality gate -> .pi/extensions/
 #   ./scripts/install.sh mcp [project]              config/mcp.json -> .pi/mcp.json (only if absent)
@@ -40,7 +40,7 @@ add_extension() { # add_extension PROJECT FILE
 install_skills() {
   local project target
   project=$(project_dir "${1:-}")
-  target="$project/.agents/skills"
+  target="$project/.pi/skills"
   run mkdir -p "$target"
   for dir in "$ROOT"/skills/*/; do
     local name; name="$(basename "$dir")"
@@ -55,7 +55,8 @@ install_skills() {
 install_context() {
   local project target
   project=$(project_dir "${1:-}")
-  target="$project/AGENTS.md"
+  target="$project/.pi/AGENTS.md"
+  run mkdir -p "$project/.pi"
   local begin="<!-- fabeee-code:rules -->" end="<!-- /fabeee-code:rules -->" tmp
   tmp=$(mktemp)
   # Keep everything outside our marked section (dropping trailing blank lines), then append it fresh.
@@ -75,8 +76,8 @@ install_context() {
     t inst_agents_done "$target"; echo
   fi
   rm -f "$tmp" "$tmp.new"
-  # pi also reads CLAUDE.md; this extension drops it so AGENTS.md is the only context file.
-  add_extension "$project" agents-md-only.ts
+  # Makes pi read .pi/AGENTS.md instead of the root AGENTS.md/CLAUDE.md other harnesses use.
+  add_extension "$project" pi-agents-md.ts
 }
 
 install_models() {

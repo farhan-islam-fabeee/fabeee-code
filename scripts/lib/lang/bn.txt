@@ -40,7 +40,7 @@ existing_setup=এই প্রজেক্টে ইতিমধ্যে %s-�
 existing_q=কী করতে চান?
 existing_use=এটি ব্যবহার করুন: শুধু এই মেশিন প্রস্তুত করুন (pi, আপনার API কী, probe)
 existing_redo=প্রজেক্ট আবার কনফিগার করুন (মডেল, সেটিংস, স্কিল, প্যাকেজ)
-next_commit=git add .pi .agents AGENTS.md .gitignore && git commit   টিমের সঙ্গে সেটআপ শেয়ার করুন
+next_commit=git add .pi .gitignore && git commit   টিমের সঙ্গে সেটআপ শেয়ার করুন
 next_team=টিমের সদস্যরা নিজেদের ক্লোনে একই এক-লাইনের কমান্ড চালিয়ে "এটি ব্যবহার করুন" বেছে নেবেন; pi প্রথমবার চালু হলে প্যাকেজ ইনস্টল করবে।
 # 3. models
 step_models=3/7 মডেল
@@ -151,11 +151,10 @@ check_replace_q=বিদ্যমান .pi/check (%s) বদলে দেব�
 check_q=কোয়ালিটি গেটের জন্য দ্রুত চেক কমান্ড (এড়িয়ে যেতে Enter)
 check_dry=.pi/check-এ যা লেখা হবে: %s
 check_written=.pi/check: %s
-agents_q=এই প্রজেক্টের জন্য একটি শুরুর AGENTS.md তৈরি করবেন (ছোট, ইংরেজিতে, শনাক্ত করা কমান্ডসহ)?
-agents_dry=AGENTS.md-এ যা লেখা হবে:
-agents_created=AGENTS.md তৈরি হয়েছে। TODO লাইনগুলো পূরণ করুন।
-agents_exists=প্রজেক্টে আগে থেকেই AGENTS.md আছে; এর বিষয়বস্তু যেমন আছে তেমনই থাকবে।
-claude_ignored=CLAUDE.md পাওয়া গেছে: pi এটি উপেক্ষা করবে এবং শুধু AGENTS.md পড়বে। যা এখনও দরকার তা AGENTS.md-এ সরিয়ে নিন (CLAUDE.md যেমন আছে তেমনই থাকবে)।
+agents_q=এই প্রজেক্টের জন্য একটি শুরুর .pi/AGENTS.md তৈরি করবেন (ছোট, ইংরেজিতে, শনাক্ত করা কমান্ডসহ)?
+agents_dry=.pi/AGENTS.md-এ যা লেখা হবে:
+agents_created=.pi/AGENTS.md তৈরি হয়েছে। TODO লাইনগুলো পূরণ করুন।
+agents_exists=প্রজেক্টে আগে থেকেই .pi/AGENTS.md আছে; এর বিষয়বস্তু যেমন আছে তেমনই থাকবে।
 gitignore_dry=.gitignore-এ %s যোগ করা হবে
 gitignore_added=.gitignore: %s যোগ করা হয়েছে
 # summary
@@ -176,7 +175,7 @@ measure=আরও কিছু যোগ করার আগে মেপে দ
 dry_done=ড্রাই রান শেষ; কিছুই বদলানো হয়নি।
 # install.sh
 inst_skill=  স্কিল: %s
-inst_skills_done=স্কিল %s-এ ইনস্টল হয়েছে। pi-তে /skills-global চালালে বেছে নেওয়া স্কিল ~/.agents/skills-এ কপি হবে, যাতে সব প্রজেক্টে ব্যবহার করা যায়।
+inst_skills_done=স্কিল %s-এ ইনস্টল হয়েছে। pi-তে /skills-global চালালে বেছে নেওয়া স্কিল ~/.pi/agent/skills-এ কপি হবে, যাতে সব প্রজেক্টে ব্যবহার করা যায়।
 inst_agents_same=  %s-এ এজেন্ট নিয়ম ইতিমধ্যে হালনাগাদ
 inst_agents_done=  এজেন্ট নিয়ম (ভাষা, সংক্ষিপ্ত অভ্যন্তরীণ কাজ) %s-এ লেখা হয়েছে
 inst_ext_done=কোয়ালিটি গেট .pi/extensions-এ ইনস্টল হয়েছে। চালু করতে .pi/check-এ এক লাইনের দ্রুত চেক লিখুন।

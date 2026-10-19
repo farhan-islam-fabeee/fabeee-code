@@ -20,8 +20,8 @@ config/settings.json        pi の設定: 思考レベル低め、codemode、32k
 config/mcp.json             Probe（ローカルのコード検索）と Context7（ドキュメント）
 config/models.cloud.example.json  OpenAI 互換クラウドプロバイダー用のテンプレート
 extensions/quality-gate.ts  エージェントの作業終了時にプロジェクトの高速チェックを実行し、失敗を差し戻す
-extensions/skills-global.ts pi の /skills-global コマンド: 選んだプロジェクトのスキルを ~/.agents/skills にコピー
-extensions/agents-md-only.ts pi が AGENTS.md だけを読むようにする（CLAUDE.md をコンテキストから除外）
+extensions/skills-global.ts pi の /skills-global コマンド: 選んだプロジェクトのスキルを ~/.pi/agent/skills にコピー
+extensions/pi-agents-md.ts  pi がルートの AGENTS.md/CLAUDE.md（ほかのツールも読むファイル）の代わりに .pi/AGENTS.md を読むようにする
 extensions/project-models.ts プロジェクトの .pi/models.json のプロバイダーを登録（pi は models.json をグローバルにしか読まないため）
 scripts/setup.sh            対話式セットアップ（プロジェクトフォルダーで実行）: pi の設定一式をプロジェクトに書き込む
 scripts/lib/pi-config.mjs   setup.sh が使う JSON/プロジェクト用ヘルパー（変更するファイルはすべてバックアップ）
@@ -62,8 +62,8 @@ less bootstrap.sh && bash bootstrap.sh
 | `.pi/models.json`: モデルのプロバイダー。`.pi/extensions/project-models.ts` が読み込みます | API キー: macOS キーチェーン、環境変数、または pi の `/login`。`.pi/models.json` には `${VAR}` や `!security …` のような参照だけを書きます |
 | `.pi/settings.json`: デフォルトのモデル、思考レベル、codemode、圧縮、パッケージ | pi 本体 |
 | `.pi/mcp.json`: Probe と Context7 | `probe` コマンド |
-| `.pi/extensions/`: 品質ゲート、`/skills-global`、AGENTS.md 専用化、プロバイダー読み込み | `.pi/npm/`（ダウンロードしたパッケージ）と `.pi/handoff.md`。どちらも `.gitignore` に追加します |
-| `.agents/skills/`、`AGENTS.md`、`.pi/check` | |
+| `.pi/extensions/`: 品質ゲート、`/skills-global`、`.pi/AGENTS.md` の読み込み、プロバイダー読み込み | `.pi/npm/`（ダウンロードしたパッケージ）と `.pi/handoff.md`。どちらも `.gitignore` に追加します |
+| `.pi/skills/`、`.pi/AGENTS.md`、`.pi/check` | |
 
 pi はプロジェクトを信頼したあとでのみ `.pi/` を読み込みます。初回起動時の信頼確認には「はい」と答えてください。
 
@@ -78,9 +78,9 @@ pi はプロジェクトを信頼したあとでのみ `.pi/` を読み込みま
    - **クラウド:** OpenRouter、DeepSeek、Z.ai、Moonshot、pi に組み込まれたその他のプロバイダー、または料金とキャッシュ保持時間を指定したカスタムの OpenAI 互換エンドポイント。
    - **API キー:** macOS キーチェーン（pi がリクエストごとに `security` で読み取ります）、環境変数、または pi の `/login`。ファイルを共有するため、平文で保存する選択肢はありません。
 4. **設定:** `.pi/settings.json`（思考レベルは低め、codemode、ローカルのウィンドウに合わせた圧縮）を、プロジェクトのデフォルトのモデルと一緒に書き込みます。
-5. **キット:** スキルを `.agents/skills/` に、`/skills-global` コマンドと品質ゲートを、MCP サーバーの Probe と Context7 を `.pi/mcp.json` にインストールします。
+5. **キット:** スキルを `.pi/skills/` に、`/skills-global` コマンドと品質ゲートを、MCP サーバーの Probe と Context7 を `.pi/mcp.json` にインストールします。
 6. **パッケージ:** パッケージ群ごとに確認し、`pi install -l` でインストールします（`.pi/settings.json` に記録されます）。パッケージはコードを実行するため、それぞれ事前に確認します。
-7. **プロジェクトファイル:** git、`.pi/check`（package.json、Cargo、Go、Python から自動検出）、ひな形の `AGENTS.md`（なければ）、`AGENTS.md` へのエージェントルールのセクション（再実行時はそのセクションだけを置き換え、ほかの内容はそのまま）、`.gitignore` を用意します。pi は `AGENTS.md` だけを読みます。インストールされる拡張機能が `CLAUDE.md` をコンテキストから除外します。`CLAUDE.md` がある場合は警告しますが、ファイル自体は変更しません。
+7. **プロジェクトファイル:** git、`.pi/check`（package.json、Cargo、Go、Python から自動検出）、ひな形の `.pi/AGENTS.md`（なければ）、`.pi/AGENTS.md` へのエージェントルールのセクション（再実行時はそのセクションだけを置き換え、ほかの内容はそのまま）、`.gitignore` を用意します。pi はルートの `AGENTS.md`/`CLAUDE.md`（ほかのツールが使うファイル）の代わりに `.pi/AGENTS.md` を読みます。セットアップはそれらのファイルを変更しません。
 
 変更する設定ファイルは、事前にすべてバックアップします（`<file>.backup-<timestamp>`）。何度実行しても安全です。`--dry-run` を付けると、同じ質問をしたうえで何も書き込みません。
 
@@ -88,7 +88,7 @@ pi はプロジェクトを信頼したあとでのみ `.pi/` を読み込みま
 
 ## スキル
 
-スキルはプロジェクトごとに `.agents/skills/` へインストールします。すべてのプロジェクトで使いたいスキルは、pi で `/skills-global` を実行して選ぶと（すべて選ぶことも可能）、`~/.agents/skills/` にコピーされます。`/skills-global handoff resume` のように名前を指定して直接コピーすることもできます。
+スキルはプロジェクトごとに `.pi/skills/` へインストールします。すべてのプロジェクトで使いたいスキルは、pi で `/skills-global` を実行して選ぶと（すべて選ぶことも可能）、`~/.pi/agent/skills/` にコピーされます。`/skills-global handoff resume` のように名前を指定して直接コピーすることもできます。
 
 | スキル | トークンを節約する方法 |
 |---|---|

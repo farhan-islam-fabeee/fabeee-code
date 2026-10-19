@@ -4,7 +4,7 @@
 **Harness:** pi 1.2.0 (`/opt/homebrew/bin/pi`)
 **Inference:** oMLX on `127.0.0.1:8000`, serving `Qwen3.8-27B-4bit`
 
-> **Note (2026-10-20):** `scripts/setup.sh` now writes this whole setup into the project (`.pi/models.json`, `.pi/settings.json`, `.pi/mcp.json`, `.pi/extensions/`, `.agents/skills/`, `AGENTS.md`) so a team shares it through git. The phases below still describe the settings themselves; where they say `~/.pi/agent/…`, the setup script uses the project's `.pi/…` instead.
+> **Note (2026-10-20):** `scripts/setup.sh` now writes this whole setup into the project (`.pi/models.json`, `.pi/settings.json`, `.pi/mcp.json`, `.pi/extensions/`, `.pi/skills/`, `.pi/AGENTS.md`) so a team shares it through git. The phases below still describe the settings themselves; where they say `~/.pi/agent/…`, the setup script uses the project's `.pi/…` instead.
 
 ## The one idea that drives every choice
 
@@ -215,7 +215,7 @@ export default function (pi: ExtensionAPI) {
 
 Only each skill's **name + description** sit in the prompt. The body loads when needed, so skills are the cheapest way to add know-how. Keep descriptions to **one short sentence** (each one is prefill on every turn).
 
-Location: `~/.agents/skills/<name>/SKILL.md` (global), `.agents/skills/` (per project). This is the Agent Skills standard, so the same skills also work in other spec-compliant agents.
+Location: setup installs them in the project's `.pi/skills/` (pi-only; `~/.pi/agent/skills/` is pi's global folder). pi also reads `~/.agents/skills/` and `.agents/skills/`. This is the Agent Skills standard, so the same skills also work in other spec-compliant agents.
 
 ### 3a. Token and compaction skills (ready-made in [`skills/`](../skills/))
 
@@ -240,7 +240,7 @@ Install:
 ./scripts/install.sh skills ~/path/to/project
 ```
 
-This copies each skill into the project's `.agents/skills/` (pi loads project skills after you trust the project; commit them so the team gets them too). To use a skill in every project, run `/skills-global` in pi: it copies the skills you pick, or all of them, to `~/.agents/skills/`. `scripts/install.sh context <project>` (run by setup) adds [`context/AGENTS.md`](../context/AGENTS.md) as a marked section of the project's `AGENTS.md`, which pi loads in that project. Re-running replaces only that section. It also installs [`extensions/agents-md-only.ts`](../extensions/agents-md-only.ts), which removes any `CLAUDE.md` from pi's context files, so `AGENTS.md` is the only one read. `CLAUDE.md` files are never modified. Comments, commit messages, design docs and replies to the user are in Japanese unless told otherwise. Internal work, including the agent's own working files (`.pi/MAP.md`, `.pi/handoff.md`, `.pi/notes/`), uses terse English, which measured cheapest on every tokenizer tested (see [research](research.md)). The rest of the file is left as is. Then add `.pi/handoff.md` to each project's `.gitignore`. Commit `.pi/MAP.md` and `.pi/notes/` if the team uses pi.
+This copies each skill into the project's `.pi/skills/` (pi loads it after you trust the project; commit it so the team gets it too). To use a skill in every project, run `/skills-global` in pi: it copies the skills you pick, or all of them, to `~/.pi/agent/skills/`. `scripts/install.sh context <project>` (run by setup) adds [`context/AGENTS.md`](../context/AGENTS.md) as a marked section of `.pi/AGENTS.md` and installs [`extensions/pi-agents-md.ts`](../extensions/pi-agents-md.ts), which makes pi read `.pi/AGENTS.md` instead of the root `AGENTS.md`/`CLAUDE.md` that other harnesses use. Re-running replaces only that section. Comments, commit messages, design docs and replies to the user are in Japanese unless told otherwise. Internal work, including the agent's own working files (`.pi/MAP.md`, `.pi/handoff.md`, `.pi/notes/`), uses terse English, which measured cheapest on every tokenizer tested (see [research](research.md)).
 
 ### 3b. Quality skills (write these next)
 
@@ -251,7 +251,7 @@ This copies each skill into the project's `.agents/skills/` (pi loads project sk
 | `self-review` | Before saying "done", read your own `git diff` once against a checklist: unused code, error handling, naming consistent with the surrounding code, no debug leftovers. | auto |
 | `commit` | Conventional commit message from the staged diff. | `disable-model-invocation: true`, so only `/skill:commit` |
 
-Example, `~/.agents/skills/verify/SKILL.md`:
+Example, `.pi/skills/verify/SKILL.md`:
 
 ```markdown
 ---
@@ -265,7 +265,7 @@ description: Run the project's checks in fast-to-slow order after editing code.
 4. Fix and re-run the failing step only. Full suite only if the user asks.
 ```
 
-**Per project, write a short `AGENTS.md`** (about 30 lines): build/test/lint commands, layout, and conventions. For a local model this matters more than any package. Also create `.pi/check` with the one-line fast check for the quality gate.
+**Per project, write a short `.pi/AGENTS.md`** (about 30 lines): build/test/lint commands, layout, and conventions. For a local model this matters more than any package. Also create `.pi/check` with the one-line fast check for the quality gate.
 
 ---
 
@@ -451,7 +451,7 @@ Merge this into `~/.pi/agent/models.json` next to `omlx` (full file: [`config/mo
 - [ ] Baseline run of 3 tasks
 - [ ] Tier A: pi-lens (errors only), cc-safety-net, rpiv-todo-lean, pi-rtk-optimizer (read compaction off)
 - [ ] Tier D: pi-vcc, pi-prefix-stabilizer, pi-caveman (lite), pi-context-view while tuning; A/B pi-hashline-edit-pro
-- [ ] Token skills: copy `skills/` → `<project>/.agents/skills/` (lean-read, quiet-shell, batch-tools, delegate-scout, project-map, handoff, resume, docs-lookup); `/skills-global` for any you want everywhere
+- [ ] Token skills: copy `skills/` → `<project>/.pi/skills/` (lean-read, quiet-shell, batch-tools, delegate-scout, project-map, handoff, resume, docs-lookup); `/skills-global` copies any you want everywhere to `~/.pi/agent/skills/`
 - [ ] Quality skills: verify, bugfix-tdd, self-review, commit + per-project AGENTS.md
 - [ ] MCP: Probe (global install, direct search/extract) + Context7 (direct) via `config/mcp.json`; Serena only for large repos; Playwright only for frontend
 - [ ] Per project: run `project-map` once; add `.pi/handoff.md` to `.gitignore`

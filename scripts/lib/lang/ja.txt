@@ -40,7 +40,7 @@ existing_setup=このプロジェクトには %s に pi のセットアップが
 existing_q=どうしますか？
 existing_use=これを使う: このマシンだけを準備する（pi、自分の API キー、probe）
 existing_redo=プロジェクトを再設定する（モデル、設定、スキル、パッケージ）
-next_commit=git add .pi .agents AGENTS.md .gitignore && git commit   セットアップをチームと共有
+next_commit=git add .pi .gitignore && git commit   セットアップをチームと共有
 next_team=チームメンバーは自分のクローンで同じ 1 行を実行し、「これを使う」を選びます。パッケージは pi の初回起動時にインストールされます。
 # 3. models
 step_models=3/7 モデル
@@ -151,11 +151,10 @@ check_replace_q=既存の .pi/check（%s）を置き換えますか？
 check_q=品質ゲート用の高速チェックコマンド（Enter でスキップ）
 check_dry=.pi/check への書き込み: %s
 check_written=.pi/check: %s
-agents_q=このプロジェクト用のひな形 AGENTS.md を作成しますか（短い英語、検出したコマンド入り）？
-agents_dry=AGENTS.md への書き込み:
-agents_created=AGENTS.md を作成しました。TODO の行を埋めてください。
-agents_exists=このプロジェクトにはすでに AGENTS.md があります。内容はそのまま残します。
-claude_ignored=CLAUDE.md があります。pi はこれを無視し、AGENTS.md だけを読み込みます。必要な内容は AGENTS.md に移してください（CLAUDE.md はそのまま残します）。
+agents_q=このプロジェクト用のひな形 .pi/AGENTS.md を作成しますか（短い英語、検出したコマンド入り）？
+agents_dry=.pi/AGENTS.md への書き込み:
+agents_created=.pi/AGENTS.md を作成しました。TODO の行を埋めてください。
+agents_exists=このプロジェクトにはすでに .pi/AGENTS.md があります。内容はそのまま残します。
 gitignore_dry=.gitignore に %s を追加
 gitignore_added=.gitignore: %s を追加しました
 # summary
@@ -176,7 +175,7 @@ measure=さらに追加する前に計測してください: docs/gameplan.md、
 dry_done=ドライランが完了しました。何も変更していません。
 # install.sh
 inst_skill=  スキル: %s
-inst_skills_done=スキルを %s にインストールしました。pi で /skills-global を実行すると、選んだスキルを ~/.agents/skills にコピーして全プロジェクトで使えます。
+inst_skills_done=スキルを %s にインストールしました。pi で /skills-global を実行すると、選んだスキルを ~/.pi/agent/skills にコピーして全プロジェクトで使えます。
 inst_agents_same=  %s のエージェントルールはすでに最新です
 inst_agents_done=  エージェントルール（言語、簡潔な内部作業）を %s に書き込みました
 inst_ext_done=品質ゲートを .pi/extensions にインストールしました。.pi/check に1行の高速チェックを書くと有効になります。

@@ -40,7 +40,7 @@ existing_setup=이 프로젝트에는 이미 %s에 pi 설정이 있습니다 (gi
 existing_q=어떻게 할까요?
 existing_use=그대로 사용: 이 컴퓨터만 준비 (pi, 내 API 키, probe)
 existing_redo=프로젝트 다시 설정 (모델, 설정, 스킬, 패키지)
-next_commit=git add .pi .agents AGENTS.md .gitignore && git commit   설정을 팀과 공유
+next_commit=git add .pi .gitignore && git commit   설정을 팀과 공유
 next_team=팀원은 각자의 클론에서 같은 한 줄을 실행하고 "그대로 사용"을 선택합니다. 패키지는 pi를 처음 시작할 때 설치됩니다.
 # 3. models
 step_models=3/7 모델
@@ -151,11 +151,10 @@ check_replace_q=기존 .pi/check (%s)를 교체할까요?
 check_q=품질 게이트용 빠른 검사 명령 (Enter로 건너뛰기)
 check_dry=.pi/check에 쓸 내용: %s
 check_written=.pi/check: %s
-agents_q=이 프로젝트용 기본 AGENTS.md를 만들까요 (짧은 영어, 감지된 명령 포함)?
-agents_dry=AGENTS.md에 쓸 내용:
-agents_created=AGENTS.md를 만들었습니다. TODO 줄을 채우세요.
-agents_exists=프로젝트에 이미 AGENTS.md가 있습니다. 기존 내용은 그대로 둡니다.
-claude_ignored=CLAUDE.md가 있습니다. pi는 이 파일을 무시하고 AGENTS.md만 읽습니다. 필요한 내용은 AGENTS.md로 옮기세요 (CLAUDE.md는 그대로 둡니다).
+agents_q=이 프로젝트용 기본 .pi/AGENTS.md를 만들까요 (짧은 영어, 감지된 명령 포함)?
+agents_dry=.pi/AGENTS.md에 쓸 내용:
+agents_created=.pi/AGENTS.md를 만들었습니다. TODO 줄을 채우세요.
+agents_exists=프로젝트에 이미 .pi/AGENTS.md가 있습니다. 기존 내용은 그대로 둡니다.
 gitignore_dry=.gitignore에 %s 추가
 gitignore_added=.gitignore: %s 추가함
 # summary
@@ -176,7 +175,7 @@ measure=더 추가하기 전에 측정하세요: docs/gameplan.md, Phase 6.
 dry_done=드라이 런이 끝났습니다. 아무것도 변경하지 않았습니다.
 # install.sh
 inst_skill=  스킬: %s
-inst_skills_done=스킬을 %s에 설치했습니다. pi에서 /skills-global을 실행하면 선택한 스킬을 ~/.agents/skills에 복사해 모든 프로젝트에서 쓸 수 있습니다.
+inst_skills_done=스킬을 %s에 설치했습니다. pi에서 /skills-global을 실행하면 선택한 스킬을 ~/.pi/agent/skills에 복사해 모든 프로젝트에서 쓸 수 있습니다.
 inst_agents_same=  %s의 에이전트 규칙이 이미 최신입니다
 inst_agents_done=  에이전트 규칙(언어, 간결한 내부 작업)을 %s에 썼습니다
 inst_ext_done=품질 게이트를 .pi/extensions에 설치했습니다. .pi/check에 한 줄짜리 빠른 검사를 넣으면 활성화됩니다.

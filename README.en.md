@@ -20,8 +20,8 @@ config/settings.json        pi settings: low thinking, codemode, compaction size
 config/mcp.json             Probe (local code search) + Context7 (docs)
 config/models.cloud.example.json  template for any OpenAI-compatible cloud provider
 extensions/quality-gate.ts  runs the project's fast check when the agent finishes and feeds failures back
-extensions/skills-global.ts /skills-global pi command: copies chosen project skills to ~/.agents/skills
-extensions/agents-md-only.ts makes pi read only AGENTS.md (drops CLAUDE.md from its context files)
+extensions/skills-global.ts /skills-global pi command: copies chosen project skills to ~/.pi/agent/skills
+extensions/pi-agents-md.ts  makes pi read .pi/AGENTS.md instead of the root AGENTS.md/CLAUDE.md other harnesses use
 extensions/project-models.ts registers the providers in a project's .pi/models.json (pi only reads models.json globally)
 scripts/setup.sh            guided setup, run from a project folder: writes the whole pi setup into the project
 scripts/lib/pi-config.mjs   JSON/project helper used by setup.sh (backs up every file it changes)
@@ -62,8 +62,8 @@ It first asks for a display language: English, 日本語, 한국어 or বাং
 | `.pi/models.json`: model providers, loaded by `.pi/extensions/project-models.ts` | API keys: macOS Keychain, an environment variable, or pi's `/login`. `.pi/models.json` only holds a reference such as `${VAR}` or `!security …` |
 | `.pi/settings.json`: default model, thinking level, codemode, compaction, packages | pi itself |
 | `.pi/mcp.json`: Probe and Context7 | the `probe` program |
-| `.pi/extensions/`: quality gate, `/skills-global`, AGENTS.md-only, provider loader | `.pi/npm/` (downloaded packages) and `.pi/handoff.md`, both added to `.gitignore` |
-| `.agents/skills/`, `AGENTS.md`, `.pi/check` | |
+| `.pi/extensions/`: quality gate, `/skills-global`, `.pi/AGENTS.md` loader, provider loader | `.pi/npm/` (downloaded packages) and `.pi/handoff.md`, both added to `.gitignore` |
+| `.pi/skills/`, `.pi/AGENTS.md`, `.pi/check` | |
 
 pi loads `.pi/` only after you trust the project, so answer yes to its trust prompt on first start.
 
@@ -78,9 +78,9 @@ Otherwise it walks through 7 steps and asks before each change:
    - **Cloud:** OpenRouter, DeepSeek, Z.ai, Moonshot, the other providers built into pi, or a custom OpenAI-compatible endpoint with prices and cache lifetime.
    - **API keys:** the macOS Keychain (pi runs `security` on each request), an environment variable, or pi's own `/login`. There's no plain-text option, because the file is shared.
 4. **Settings:** writes `.pi/settings.json` (low thinking by default, codemode, compaction sized to the local window) with the project's default model.
-5. **Kit:** installs the skills into `.agents/skills/`, the `/skills-global` command, the quality gate, and the Probe and Context7 MCP servers in `.pi/mcp.json`.
+5. **Kit:** installs the skills into `.pi/skills/`, the `/skills-global` command, the quality gate, and the Probe and Context7 MCP servers in `.pi/mcp.json`.
 6. **Packages:** offers each package tier separately and installs with `pi install -l`, so they're declared in `.pi/settings.json`. Every package runs code, so each tier asks first.
-7. **Project files:** sets up git, `.pi/check` (detected from package.json, Cargo, Go or Python), a starter `AGENTS.md` if there's none, the agent-rules section in `AGENTS.md` (replaced on re-runs, the rest of the file untouched), and `.gitignore`. pi reads only `AGENTS.md`: an installed extension drops `CLAUDE.md` from its context, and setup warns if one exists but never edits it.
+7. **Project files:** sets up git, `.pi/check` (detected from package.json, Cargo, Go or Python), a starter `.pi/AGENTS.md` if there's none, the agent-rules section in `.pi/AGENTS.md` (replaced on re-runs, the rest of the file untouched), and `.gitignore`. pi reads `.pi/AGENTS.md` instead of the root `AGENTS.md`/`CLAUDE.md`, which other harnesses use; setup never edits those.
 
 Every config file it changes is backed up first (`<file>.backup-<timestamp>`), and it's safe to re-run. `--dry-run` asks the same questions but writes nothing.
 
@@ -88,7 +88,7 @@ To install pieces by hand instead, `./scripts/install.sh all <project>` installs
 
 ## Skills
 
-Skills are installed per project in `.agents/skills/`. To make one available everywhere, run `/skills-global` in pi and pick it (or all of them); it's copied to `~/.agents/skills/`. `/skills-global handoff resume` copies those two directly.
+Skills are installed per project in `.pi/skills/`. To make one available everywhere, run `/skills-global` in pi and pick it (or all of them); it's copied to `~/.pi/agent/skills/`. `/skills-global handoff resume` copies those two directly.
 
 | Skill | Saves tokens by |
 |---|---|

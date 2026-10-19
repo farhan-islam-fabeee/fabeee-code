@@ -455,11 +455,10 @@ else
   fi
 fi
 
-[[ -e CLAUDE.md ]] && warn "$(t claude_ignored)"
-if [[ ! -e AGENTS.md ]]; then
+if [[ ! -e .pi/AGENTS.md ]]; then
   if confirm "$(t agents_q)" y; then
     if [[ $DRY_RUN == 1 ]]; then run "$(t agents_dry)"; cfg agents-template "$PROJECT" "${check:-}"
-    else cfg agents-template "$PROJECT" "${check:-}" > AGENTS.md; ok "$(t agents_created)"; fi
+    else cfg agents-template "$PROJECT" "${check:-}" > .pi/AGENTS.md; ok "$(t agents_created)"; fi
   fi
 else
   ok "$(t agents_exists)"

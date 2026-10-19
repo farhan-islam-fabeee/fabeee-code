@@ -3,16 +3,16 @@ import { cpSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-// /skills-global [name ...]: copy skills from this project's .agents/skills/ to ~/.agents/skills/
+// /skills-global [name ...]: copy skills from this project's .pi/skills/ to ~/.pi/agent/skills/
 // so they are available in every project. With no names, pick one (or all) from a list.
 const ALL = "All skills";
 
 export default function (pi: ExtensionAPI) {
   pi.registerCommand("skills-global", {
-    description: "Copy project skills (.agents/skills) to ~/.agents/skills",
+    description: "Copy project skills (.pi/skills) to ~/.pi/agent/skills",
     handler: async (args, ctx) => {
-      const from = join(ctx.cwd, ".agents", "skills");
-      const to = join(homedir(), ".agents", "skills");
+      const from = join(ctx.cwd, ".pi", "skills");
+      const to = join(process.env.PI_CODING_AGENT_DIR || join(homedir(), ".pi", "agent"), "skills");
       const available = existsSync(from)
         ? readdirSync(from, { withFileTypes: true })
             .filter((d) => d.isDirectory() && existsSync(join(from, d.name, "SKILL.md")))
@@ -25,7 +25,7 @@ export default function (pi: ExtensionAPI) {
 
       let names = args.trim().split(/\s+/).filter(Boolean);
       if (!names.length) {
-        const pick = await ctx.ui.select("Copy which skill to ~/.agents/skills?", [ALL, ...available]);
+        const pick = await ctx.ui.select("Copy which skill to ~/.pi/agent/skills?", [ALL, ...available]);
         if (!pick) return;
         names = pick === ALL ? available : [pick];
       }
