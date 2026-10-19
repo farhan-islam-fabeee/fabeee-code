@@ -123,7 +123,7 @@ Install globally with `pi install npm:<name>`. Add `-l` for a project-only insta
 | **`pi-lens`** | Runs LSP diagnostics, linters, formatters and type checks on every edit. It also adds AST search/replace, a *read guard* (blocks edits to files the agent hasn't read) and a git guard. This is the biggest single quality lever for a local model. | Low on decode. Configure it to report **errors only, not style warnings**, so diagnostics don't flood context. LSP clients idle-evict. |
 | **`cc-safety-net`** | Blocks `rm -rf`, `git reset --hard`, force-push, and reads of `.env`/SSH/AWS secrets. It parses commands, so wrapping or reordering doesn't hide them. | About zero. No dependencies, and no LLM involvement. |
 | **`@ssk_dev/rpiv-todo-lean`** | A live todo list that survives compaction. Local models lose the thread after compaction, and this anchors them. It's a trimmed wrapper around `@juicesharp/rpiv-todo` with the same engine, and its tool description is about 250 tokens instead of about 900. Don't install both. | Tiny. |
-| **`pi-token-killer`** | RTK-style output filter in pure TypeScript. Through `tool_call`/`tool_result` hooks it compresses git, test-runner, linter, grep, install, Docker and JSON output before the model sees it, and collapses repeated lines. On a failed command it saves the raw output to `~/.pi/agent/rtk/` and appends the path, so nothing is lost. **Turn off its file-read filter** in `/rtk settings`: pi's `edit` needs exact file text, and compressed reads cause edit mismatches. | Negative. It *removes* tokens with no LLM call. Check `/rtk gain` and `/rtk discover`. |
+| **`pi-rtk-optimizer`** | Compresses tool output in pure TypeScript with zero dependencies: summarizes test runs, keeps only build errors and warnings, condenses git status/log/diff, aggregates linter output, and groups grep/rg hits by file. Hard truncation at 12,000 characters. **Read compaction is off by default, so leave it off**: pi's `edit` needs exact file text. If the external `rtk` binary is installed, it can also rewrite commands into quieter forms (optional). There's no saved copy of the raw output, so rerun into a log file when you need the whole thing. *Replaces `pi-token-killer`, which no longer installs on Node 26: it pins `better-sqlite3` 11.x, which has no Node 26 build and doesn't compile against Node 26's V8. It also still uses pi's pre-rename package names (last release April 2026).* | Negative. It *removes* tokens with no LLM call. Check `/rtk stats`. |
 
 ### Tier B: on demand (LLM passes, only when you invoke them)
 
@@ -148,7 +148,7 @@ Selection rule for a local 27B: **no extra LLM calls** (each one is a slow local
 | **`@sting8k/pi-vcc`** | Replaces pi's compaction with an **algorithmic** one that makes no model calls. It keeps goal, files and changes, commits, outstanding context, user preferences, and about 120 lines of recent transcript. `vcc_recall` searches the raw session for anything compacted away. Config: `~/.pi/agent/pi-vcc-config.json`. | **Add.** Compaction goes from a long 27B summarization turn to near-instant. |
 | **`pi-prefix-stabilizer`** | Keeps the system prompt byte-identical: it pins volatile package paths, sorts tool schemas, and warns when the leading text changes. | **Add** (small, no deps). Load it before other prompt-touching extensions. It only helps if oMLX's cache is keyed on prefix content, so confirm with cache-miss notices. |
 | **`pi-caveman`** at **`/caveman lite`** | Appends terse-output rules to the system prompt (once, so the prompt stays stable). It doesn't touch reasoning, tool calls or file writes, and it switches itself off for security warnings and irreversible actions. | **Add, Lite level only.** Output is decode, the slowest thing on a local model. Full and Ultra may hurt the clarity of explanations. |
-| **`pi-hashline-edit-pro`** | Read output gets 4-character line anchors, and edits target anchors instead of repeating the old text. Stale anchors are rejected, and the post-edit diff returns fresh anchors so no re-read is needed. It replaces the built-in `read`, `edit` and `grep`. | **A/B test.** Edits need far fewer output tokens, but reads cost about 2 extra tokens per line, and it may clash with pi-lens's read guard and the token-killer read filter. |
+| **`pi-hashline-edit-pro`** | Read output gets 4-character line anchors, and edits target anchors instead of repeating the old text. Stale anchors are rejected, and the post-edit diff returns fresh anchors so no re-read is needed. It replaces the built-in `read`, `edit` and `grep`. | **A/B test.** Edits need far fewer output tokens, but reads cost about 2 extra tokens per line, and it may clash with pi-lens's read guard and pi-rtk-optimizer's read compaction (keep it off). |
 | **`context-fold`** | Deterministic: past about 45% context, it folds stale tool results into digests in batches (cache-aware). Originals stay recallable through `recall_folded` and `unfold`. | **Watch.** The design fits well, but the README says it may be retired. |
 | **`@pi-unipi/compactor`** | Zero-LLM compaction plus recall plus multi-language sandbox tools. | Alternative to pi-vcc. Its sandbox overlaps codemode, so it's heavier. |
 | **`pi-context-view`** | Shows what's in your context, including hidden prompt parts. | **Add while tuning**, then remove. |
@@ -156,16 +156,16 @@ Selection rule for a local 27B: **no extra LLM calls** (each one is a slow local
 **Rejected after reading their pages:**
 - **`pi-observational-memory`** and **`billion-context(-pi)`**: they run background or in-band LLM calls on the session model.
 - **`pi-jev-lens`**: its classifier is an external API (TypeSafe key), so tool output would leave your machine.
-- **`toolflow`**: overlaps token-killer, its read cache has an unclear staleness risk, and its per-stage tool pruning changes the tool list, which busts the prefix cache.
+- **`toolflow`**: overlaps pi-rtk-optimizer, its read cache has an unclear staleness risk, and its per-stage tool pruning changes the tool list, which busts the prefix cache.
 - **`pi-fovea`**: injects a repo map on every prompt, which means more input and a changing prefix. Probe covers search.
 - **`pi-context-diet`** (local only): built around cloud cache TTLs, and its `always` mode rewrites history every turn. **On cloud providers it becomes a good fit.** See Phase 7.
-- **`pi-rtk-optimizer`, `@bacnh85/pi-rtk`**: duplicate token-killer.
+- **`pi-token-killer`**: fails to install on Node 26 (native `better-sqlite3` 11.x) and is unmaintained; replaced by `pi-rtk-optimizer`. **`@bacnh85/pi-rtk`** needs the external `rtk` binary for everything.
 
 ### Skip for now
 
 - **`pi-mcp-adapter` / `pi-mcp-extension`**: pi 1.2 has **built-in MCP** with codemode/deferred exposure, so these are redundant.
 - **`billion-context`**: a proxy that replaces old message ranges with summaries, and the main model decides when to compress. On a local 27B, that means extra slow model turns, and the rewritten history invalidates oMLX's prefix cache. The `handoff` skill (Phase 3) gets most of the benefit for free.
-- **`pi-rtk`**: overlaps with `pi-token-killer`. Its `sourceCodeFiltering` strips comments from file reads, which breaks exact-match edits. Don't run two output filters at once.
+- **`pi-rtk`** (mcowger): unpublished from npm in September 2026. Don't run two output filters at once in any case.
 - **`context-mode`** isn't skipped: it's an optional A/B alternative in Phase 4. It keeps tool output out of context rather than rewriting history.
 - **`pi-web-access`**: only add it if you actually need web research. Context7 (Phase 4) covers library docs.
 
@@ -308,7 +308,7 @@ Then use [`config/mcp.json`](../config/mcp.json) as `~/.pi/agent/mcp.json` (`scr
 
 The three direct tools add a few hundred tokens to the system prompt. That prefix never changes, so oMLX caches it after the first turn. Verify with `pi mcp list`.
 
-**Optional A/B: `context-mode`** (`npm i -g context-mode` + `pi install npm:context-mode`, then add `"context-mode": { "command": "context-mode", "exposure": "deferred" }`). It runs commands in a sandbox where only their stdout enters context. Large outputs (logs, Playwright snapshots, fetched pages) are indexed in local SQLite FTS5 so the model can search them instead of reading them. It also logs edits, errors and decisions so state can be retrieved after a compaction. Its own benchmarks claim 94–99% reductions on large outputs. Try it on log-heavy or browser-heavy projects. **Run it *instead of* `pi-token-killer`, not alongside it**, because both reroute shell output. Drop it if the local model misuses its 11 tools. Check with `ctx stats`.
+**Optional A/B: `context-mode`** (`npm i -g context-mode` + `pi install npm:context-mode`, then add `"context-mode": { "command": "context-mode", "exposure": "deferred" }`). It runs commands in a sandbox where only their stdout enters context. Large outputs (logs, Playwright snapshots, fetched pages) are indexed in local SQLite FTS5 so the model can search them instead of reading them. It also logs edits, errors and decisions so state can be retrieved after a compaction. Its own benchmarks claim 94–99% reductions on large outputs. Try it on log-heavy or browser-heavy projects. **Run it *instead of* `pi-rtk-optimizer`, not alongside it**, because both reroute shell output. Drop it if the local model misuses its 11 tools. Check with `ctx stats`.
 
 For Serena, install it with `uv tool install -p 3.13 serena-agent` and `serena init`. Take the exact MCP launch command from [Serena's client guide](https://oraios.github.io/serena/02-usage/030_clients.html), then add it to `.pi/mcp.json` in the large repos where you want it. Serena disables its own file and shell tools inside harnesses, so it won't duplicate pi's.
 
@@ -338,7 +338,7 @@ Don't route normal coding turns between models. Each switch drops the prompt cac
 ## Phase 6: Measure, then keep or drop
 
 1. Pick **3 real tasks** from your work: a small bugfix, a multi-file feature, and a refactor.
-2. Run each at baseline (Phase 0 + 1 only). Record **wall-clock time, number of turns, peak context tokens, compactions triggered, whether checks pass, and how many manual fixes you needed.** For token savings, also read `/rtk gain` (token-killer) or `ctx stats` (context-mode).
+2. Run each at baseline (Phase 0 + 1 only). Record **wall-clock time, number of turns, peak context tokens, compactions triggered, whether checks pass, and how many manual fixes you needed.** For token savings, also read `/rtk stats` (pi-rtk-optimizer) or `ctx stats` (context-mode).
 3. Add **one** tier at a time (A → skills → MCP → B → C) and re-run. Keep what improves pass rate without costing more than about 15% time.
 4. Watch the cache-miss notices. If a package causes misses every turn, it's rewriting the prefix: drop it or filter its resources:
    ```json
@@ -350,7 +350,7 @@ Don't route normal coding turns between models. Each switch drops the prompt cac
 
 ## Phase 7: Cloud option (OpenRouter or any OpenAI-compatible API)
 
-Everything in Phases 1–6 carries over: skills, MCP, pi-vcc, token-killer and the quality gate. What changes is **what you're optimizing.** Locally, the cost is *time*, mostly prefill. In the cloud, the cost is *money*, and three facts dominate the bill:
+Everything in Phases 1–6 carries over: skills, MCP, pi-vcc, pi-rtk-optimizer and the quality gate. What changes is **what you're optimizing.** Locally, the cost is *time*, mostly prefill. In the cloud, the cost is *money*, and three facts dominate the bill:
 
 1. **Every turn re-sends the whole context.** A 30-turn session at 80k context bills about 2.4M input tokens.
 2. **Cached input is 4–10× cheaper.** OpenRouter lists cache reads at 0.1× the input price for DeepSeek, Anthropic and Alibaba Qwen, about 0.2× for Z.AI, and 0.25× for Moonshot, Grok and Gemini. **Cache hit rate is the single biggest cost lever.**
@@ -429,7 +429,7 @@ Merge this into `~/.pi/agent/models.json` next to `omlx` (full file: [`config/mo
 | Keep `"cacheWarming": "streaming"` (the default). Use `"idle"` only if you often pause 5+ minutes mid-task with large contexts. | Warm-ups are billed requests. pi only warms when it estimates at least $0.05 avoided, but the cost adds up. |
 | **`pi-cache-optimizer`**: Tier C becomes **add**. | Adds a per-session `prompt_cache_key` for OpenAI-compatible routes, keeps the skill list short, warns about proxies that split caches, and shows hit rate in the footer. |
 | **`pi-context-diet`** (default `cold` mode, set `/context-diet ttl` to the provider's TTL): becomes **add**. | Once a long pause has already expired the cache, the next request is uncached anyway. It uses that moment to replace stale tool output with stubs, so the trim costs nothing extra. Don't use `always` mode. |
-| `pi-vcc`, `pi-caveman` (Lite), `pi-token-killer`, `rpiv-todo-lean`, `pi-prefix-stabilizer` | All worth *more* in the cloud. A stock compaction is a paid call on the whole context, output costs several times more than input, and a stable prefix means cache hits. |
+| `pi-vcc`, `pi-caveman` (Lite), `pi-rtk-optimizer`, `rpiv-todo-lean`, `pi-prefix-stabilizer` | All worth *more* in the cloud. A stock compaction is a paid call on the whole context, output costs several times more than input, and a stable prefix means cache hits. |
 | Subagents: put `scout` on a **cheap model** (pi-subagents per-role overrides). | Exploration is read-heavy and doesn't need the big model. |
 
 ### 7.5 Guardrails and verification
@@ -447,13 +447,13 @@ Merge this into `~/.pi/agent/models.json` next to `omlx` (full file: [`config/mo
 - [ ] Phase 0: align context window (pi = oMLX), set maxTokens 8192, fix sampling, turn on chunked prefill and prefill memory guard, set concurrency to 2
 - [ ] Phase 1: settings.json (thinking low, +codemode, compaction overrides, timeouts)
 - [ ] Baseline run of 3 tasks
-- [ ] Tier A: pi-lens (errors only), cc-safety-net, rpiv-todo-lean, pi-token-killer (file-read filter off)
+- [ ] Tier A: pi-lens (errors only), cc-safety-net, rpiv-todo-lean, pi-rtk-optimizer (read compaction off)
 - [ ] Tier D: pi-vcc, pi-prefix-stabilizer, pi-caveman (lite), pi-context-view while tuning; A/B pi-hashline-edit-pro
 - [ ] Token skills: copy `skills/` → `~/.agents/skills/` (lean-read, quiet-shell, batch-tools, delegate-scout, project-map, handoff, resume, docs-lookup)
 - [ ] Quality skills: verify, bugfix-tdd, self-review, commit + per-project AGENTS.md
 - [ ] MCP: Probe (global install, direct search/extract) + Context7 (direct) via `config/mcp.json`; Serena only for large repos; Playwright only for frontend
 - [ ] Per project: run `project-map` once; add `.pi/handoff.md` to `.gitignore`
-- [ ] Optional A/B: context-mode instead of pi-token-killer on log- or browser-heavy projects
+- [ ] Optional A/B: context-mode instead of pi-rtk-optimizer on log- or browser-heavy projects (it uses native `better-sqlite3` 12.x, so check it installs on your Node version first)
 - [ ] Tier B: plan-mode, pi-simplify, pi-subagents (concurrency 2, watchdog off)
 - [ ] Quality-gate extension + `.pi/check` per project
 - [ ] Tier C: pi-cache-optimizer, A/B tested

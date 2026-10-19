@@ -14,6 +14,8 @@ These findings come from pi's docs and pi.dev package pages, read between 2026-1
 
 ## Packages
 
+**Native modules:** pi runs on whatever Node is on your PATH (here Node 26 from nvm), so a package with a native dependency must have a build for that Node version. On 2026-10-20 every package in the setup tiers was checked: none needs a compiler except `pi-lens`, which uses ast-grep's prebuilt binaries.
+
 ### Adopted
 
 | Package | Role | Why |
@@ -21,7 +23,7 @@ These findings come from pi's docs and pi.dev package pages, read between 2026-1
 | [pi-lens](https://pi.dev/packages/pi-lens) | Quality | LSP, lint, format and type checks on every edit, plus a read guard and AST tools |
 | [cc-safety-net](https://pi.dev/packages/cc-safety-net) | Safety | Blocks destructive commands and secret access by parsing the command |
 | [@ssk_dev/rpiv-todo-lean](https://pi.dev/packages/@ssk_dev/rpiv-todo-lean) | Tokens | Todo list that survives compaction, with a tool description of about 250 tokens instead of about 900 |
-| [pi-token-killer](https://pi.dev/packages/pi-token-killer) | Tokens | RTK-style output filters through hooks, saving raw output on failure. **Turn off its file-read filter.** |
+| [pi-rtk-optimizer](https://pi.dev/packages/pi-rtk-optimizer) | Tokens | Zero-dependency output compaction (tests, build, git, lint, grep); read compaction off by default. Replaced pi-token-killer on 2026-10-20. |
 | [@sting8k/pi-vcc](https://pi.dev/packages/@sting8k/pi-vcc) | Compaction | Algorithmic compaction with no LLM call, plus `vcc_recall` |
 | [pi-prefix-stabilizer](https://pi.dev/packages/pi-prefix-stabilizer) | Cache | Keeps the system prompt byte-stable so the prefix cache keeps hitting |
 | [pi-caveman](https://pi.dev/packages/pi-caveman) (Lite level) | Output tokens | Terse prose. Code, tool calls and reasoning are untouched. |
@@ -37,7 +39,7 @@ These findings come from pi's docs and pi.dev package pages, read between 2026-1
 | Package | Notes |
 |---|---|
 | [pi-hashline-edit-pro](https://pi.dev/packages/pi-hashline-edit-pro) | Anchor-based edits mean fewer output tokens per edit, but each line read costs about 2 extra tokens. It replaces the built-in read, edit and grep, so check for conflicts with pi-lens. |
-| [context-mode](https://pi.dev/packages/context-mode) | Sandboxed execution with an FTS5 index of large outputs and state that survives compaction. Use it **instead of** pi-token-killer, not alongside it. |
+| [context-mode](https://pi.dev/packages/context-mode) | Sandboxed execution with an FTS5 index of large outputs and state that survives compaction. Use it **instead of** pi-rtk-optimizer, not alongside it. Depends on native `better-sqlite3` 12.x, so check it installs on your Node version. |
 | [context-fold](https://pi.dev/packages/context-fold) | Deterministic, cache-aware folding of stale tool output that can be recalled later. Its README says it may be retired. |
 | [@pi-unipi/compactor](https://pi.dev/packages/@pi-unipi/compactor) | An alternative to pi-vcc that also bundles sandbox tools. |
 
@@ -49,9 +51,10 @@ These findings come from pi's docs and pi.dev package pages, read between 2026-1
 | billion-context(-pi) | Uses the main model to compress, and rewrites history, which breaks the cache |
 | pi-observational-memory | Runs background LLM calls on the session model |
 | pi-jev-lens | Its classifier is an external API, so tool output leaves your machine |
-| toolflow | Overlaps pi-token-killer, has unclear read-cache staleness, and per-stage tool pruning busts the cache |
+| toolflow | Overlaps pi-rtk-optimizer, has unclear read-cache staleness, and per-stage tool pruning busts the cache |
 | pi-fovea | Adds a repo map to every prompt |
-| pi-rtk, pi-rtk-optimizer, @bacnh85/pi-rtk | Duplicate pi-token-killer. pi-rtk's source filtering breaks exact-match edits. |
+| pi-token-killer | Fails on Node 26: pins native `better-sqlite3` 11.x (no Node 26 prebuild, doesn't compile against Node 26's V8). Unmaintained since April 2026 and still uses pi's pre-rename peer names. |
+| pi-rtk, @bacnh85/pi-rtk | pi-rtk was unpublished from npm (2026-09-27). @bacnh85/pi-rtk needs the external `rtk` binary. |
 | pi-context-diet (local only) | Built around cloud cache TTLs. It's adopted for cloud use. |
 
 ## MCP servers

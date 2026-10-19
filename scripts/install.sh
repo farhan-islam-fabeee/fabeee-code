@@ -21,7 +21,7 @@ STAMP="${FABEEE_CODE_STAMP:-$(date +%Y%m%d-%H%M%S)}"
 source "$ROOT/scripts/lib/i18n.sh"
 set_lang "${FABEEE_CODE_LANG:-en}"
 
-core=(pi-lens cc-safety-net @ssk_dev/rpiv-todo-lean pi-token-killer)
+core=(pi-lens cc-safety-net @ssk_dev/rpiv-todo-lean pi-rtk-optimizer)
 tokens=(@sting8k/pi-vcc pi-prefix-stabilizer pi-caveman)
 ondemand=(@narumitw/pi-plan-mode pi-simplify pi-subagents)
 tuning=(pi-context-view)
@@ -97,9 +97,23 @@ install_packages() {
   # tier is validated above; eval keeps this working on macOS's bash 3.2 (no namerefs)
   local pkgs; eval "pkgs=(\"\${${tier}[@]}\")"
   t inst_pkg_warn; echo
+  local failed=()
   for pkg in "${pkgs[@]}"; do
-    run pi install "npm:$pkg"
+    # settings.json lists installed packages as "npm:<name>" or "npm:<name>@<version>"
+    if grep -q "\"npm:$pkg[\"@]" "$PI_DIR/settings.json" 2>/dev/null; then
+      t inst_pkg_skip "$pkg"; echo
+      continue
+    fi
+    # One failing package (for example a native module that won't build) must not stop the rest.
+    if ! run pi install "npm:$pkg"; then
+      failed+=("$pkg")
+      t inst_pkg_failed "$pkg"; echo
+    fi
   done
+  if [ "${#failed[@]}" -gt 0 ]; then
+    t inst_pkg_failed_hint; echo
+    return 1
+  fi
 }
 
 case "${1:-}" in

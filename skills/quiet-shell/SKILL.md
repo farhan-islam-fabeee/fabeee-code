@@ -14,4 +14,4 @@ description: Run shell commands so their output stays short. Use for every build
   ```
 - **Scope** tests, linters and type checks to the files or packages you touched. Run the full suite only when asked.
 - **Never** run `ls -R`, `find /`, `tree` without `-L 2`, or `cat` on large files. Use `fd --max-depth 2`.
-- If a result ends with a path to the saved raw output (token-killer tee file), read only the slice you need from it.
+- If output was compacted or truncated and you need the full text, rerun the command into a log file and read only the slice you need.

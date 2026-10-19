@@ -146,7 +146,7 @@ pick_model() {
 USE_LOCAL=0 USE_CLOUD=0
 LOCAL_PROVIDER="" LOCAL_MODEL="" LOCAL_URL="" LOCAL_CTX="" LOCAL_BACKEND=""
 CLOUD_PROVIDER="" CLOUD_MODEL="" CLOUD_LOGIN=0
-INSTALLED_PKGS=""
+INSTALLED_PKGS="" FAILED_TIERS=""
 
 # ---------- 1. project ----------
 step "$(t step_project)"
@@ -386,7 +386,10 @@ step "$(t step_packages)"
 warn "$(t packages_warn)"
 offer_tier() { # offer_tier TIER DEFAULT "question"
   if [[ $HAVE_PI == 0 ]]; then warn "$(t tier_skip "$1")"; return; fi
-  if confirm "$3" "$2"; then "$KIT/scripts/install.sh" packages "$1"; INSTALLED_PKGS+=" $1"; fi
+  if confirm "$3" "$2"; then
+    if "$KIT/scripts/install.sh" packages "$1"; then INSTALLED_PKGS+=" $1"
+    else INSTALLED_PKGS+=" $1"; FAILED_TIERS+=" $1"; warn "$(t tier_failed "$1")"; fi
+  fi
 }
 offer_tier core y "$(t tier_core)"
 offer_tier tokens y "$(t tier_tokens)"
@@ -431,6 +434,7 @@ fi
 
 # ---------- summary ----------
 step "$(t step_checks)"
+[[ -n $FAILED_TIERS ]] && warn "$(t tiers_failed_summary "${FAILED_TIERS# }")"
 if [[ $HAVE_PI == 1 && $DRY_RUN == 0 ]]; then
   for p in $LOCAL_PROVIDER $CLOUD_PROVIDER; do
     [[ $p == llama.cpp ]] && continue
