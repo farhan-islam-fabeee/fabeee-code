@@ -238,7 +238,7 @@ Install:
 ./scripts/install.sh skills
 ```
 
-This copies each skill to `~/.agents/skills/`, backing up any skill with the same name first. Then add `.pi/handoff.md` to each project's `.gitignore`. Commit `.pi/MAP.md` and `.pi/notes/` if the team uses pi.
+This copies each skill to `~/.agents/skills/`, backing up any skill with the same name first. It also installs [`context/AGENTS.md`](../context/AGENTS.md) as the global `~/.pi/agent/AGENTS.md`, which pi loads into every session: write repo artifacts (comments, commit messages, docs) and replies to the user in English unless told otherwise, and use terse English for internal work. English measured cheapest on every tokenizer tested (see [research](research.md)). An existing global `AGENTS.md` is backed up first. Then add `.pi/handoff.md` to each project's `.gitignore`. Commit `.pi/MAP.md` and `.pi/notes/` if the team uses pi.
 
 ### 3b. Quality skills (write these next)
 

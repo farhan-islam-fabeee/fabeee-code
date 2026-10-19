@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Install parts of pi-agent-kit into your pi setup.
-# Never overwrites models.json or settings.json; existing skills/extensions are backed up first.
+# Never overwrites models.json or settings.json; existing skills, extensions and AGENTS.md are backed up first.
 #
-#   ./scripts/install.sh skills              copy skills/* to ~/.agents/skills/
+#   ./scripts/install.sh skills              copy skills/* to ~/.agents/skills/ and context/AGENTS.md to ~/.pi/agent/
+#   ./scripts/install.sh context             only install context/AGENTS.md (global rules: language, terse internals)
 #   ./scripts/install.sh extension           copy extensions/quality-gate.ts to ~/.pi/agent/extensions/
 #   ./scripts/install.sh mcp                 copy config/mcp.json to ~/.pi/agent/mcp.json (only if absent)
 #   ./scripts/install.sh packages <tier>     pi install the packages in a tier (see TIERS below)
@@ -46,6 +47,23 @@ install_skills() {
     echo "  skill: $name"
   done
   echo "Skills installed. Run /reload in an open pi session."
+  install_context
+}
+
+install_context() {
+  local target="$PI_DIR/AGENTS.md"
+  run mkdir -p "$PI_DIR"
+  if [[ -e "$target" ]] && cmp -s "$ROOT/context/AGENTS.md" "$target"; then
+    echo "  AGENTS.md already up to date"
+    return
+  fi
+  if [[ -e "$target" ]]; then
+    # pi only loads the exact name AGENTS.md, so a suffixed backup beside it stays inert
+    run mv "$target" "$target.backup-$STAMP"
+    echo "  backed up existing AGENTS.md -> $target.backup-$STAMP (merge any rules you still want)"
+  fi
+  run cp "$ROOT/context/AGENTS.md" "$target"
+  echo "  global rules: $target"
 }
 
 install_extension() {
@@ -83,9 +101,10 @@ install_packages() {
 
 case "${1:-}" in
   skills) install_skills ;;
+  context) install_context ;;
   extension) install_extension ;;
   mcp) install_mcp ;;
   packages) install_packages "${2:-}" ;;
   all) install_skills; install_extension; install_mcp ;;
-  *) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+  *) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

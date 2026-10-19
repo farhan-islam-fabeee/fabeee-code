@@ -10,6 +10,7 @@ It was tuned for pi 1.2.0, an M5 Pro with 24 GB, and oMLX serving `Qwen3.8-27B-4
 docs/gameplan.md            the full plan: phases 0–7, rationale, rollout checklist
 docs/research.md            package and MCP findings (adopted / A-B / rejected), cache pricing, open questions
 skills/                     8 token- and compaction-saving skills (Agent Skills format)
+context/AGENTS.md           global rules installed with the skills: English for repo artifacts and replies, terse English internally
 skills-ja/                  Japanese translations, kept for reference (they cost 13–71% more tokens depending on the model; see docs/research.md)
 config/models.local.json    oMLX provider: context window matched to the server, sampling per thinking level
 config/settings.json        pi settings: low thinking, codemode, compaction sized for 32k
@@ -23,7 +24,7 @@ scripts/count_tokens.py     compares token counts of skills/ vs skills-ja/ acros
 ## Quick start
 
 1. **Fix the model config first.** Read [docs/gameplan.md](docs/gameplan.md), Phase 0. Merge [config/models.local.json](config/models.local.json) and [config/settings.json](config/settings.json) into `~/.pi/agent/` by hand (the script never overwrites these), and set `OMLX_API_KEY` to your oMLX key.
-2. **Install the skills, the extension and the MCP config:**
+2. **Install the skills (with the global `AGENTS.md`), the extension and the MCP config:**
    ```bash
    ./scripts/install.sh all
    ```
