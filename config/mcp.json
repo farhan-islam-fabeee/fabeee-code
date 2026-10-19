@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "probe": {
+      "command": "probe",
+      "args": ["mcp", "--timeout", "60"],
+      "env": { "PROBE_MAX_TOKENS": "4000" },
+      "exposure": "deferred",
+      "toolExposure": {
+        "search_code": "direct",
+        "extract_code": "direct"
+      },
+      "description": "Local AST-aware code search that returns whole functions and classes, with token caps"
+    },
+    "context7": {
+      "url": "https://mcp.context7.com/mcp",
+      "exposure": "direct",
+      "description": "Up-to-date library and framework docs"
+    }
+  }
+}

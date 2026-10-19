@@ -1,0 +1,22 @@
+{
+  "$schema": "https://pi.dev/schemas/models.schema.json",
+  "providers": {
+    "mycloud": {
+      "baseUrl": "https://api.example.com/v1",
+      "api": "openai-completions",
+      "apiKey": "${MYCLOUD_API_KEY}",
+      "models": [
+        {
+          "id": "<model-id>",
+          "name": "<Model> (mycloud)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 131072,
+          "maxTokens": 16384,
+          "cost": { "input": 0.0, "output": 0.0, "cacheRead": 0.0, "cacheWrite": 0.0 },
+          "promptCache": { "short": 300 }
+        }
+      ]
+    }
+  }
+}
