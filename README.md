@@ -19,6 +19,8 @@ config/models.cloud.example.json  template for any OpenAI-compatible cloud provi
 extensions/quality-gate.ts  runs the project's fast check when the agent finishes and feeds failures back
 scripts/setup.sh            guided setup, run from a project folder: installs pi, configures local/cloud, installs the kit, prepares the project
 scripts/lib/pi-config.mjs   JSON/project helper used by setup.sh (backs up every file it changes)
+scripts/lib/i18n.sh         message loader; catalogs in scripts/lib/lang/{en,ja,ko,bn}.txt
+scripts/lib/check-i18n.mjs  checks the catalogs have the same keys and placeholders (run after editing messages)
 scripts/install.sh          installs skills, the extension, MCP config and package tiers
 scripts/count_tokens.py     compares token counts of skills/ vs skills-ja/ across tokenizers (HF tokenizer.json, OpenAI o200k, Kimi)
 ```
@@ -35,7 +37,7 @@ cd ~/path/to/your-project
 ~/Development/pi-agent-kit/scripts/setup.sh
 ```
 
-It walks through 7 steps and asks before each change:
+It first asks for a display language: English, 日本語, 한국어 or বাংলা. Your system locale sets the default, and `--lang=ja` (or `PI_KIT_LANG=ja`) skips the question. Then it walks through 7 steps and asks before each change:
 
 1. **Project:** confirms the folder.
 2. **pi:** installs pi if it's missing (the official installer or npm) and checks the version.

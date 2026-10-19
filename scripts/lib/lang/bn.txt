@@ -1,0 +1,182 @@
+# বাংলা বার্তা (setup.sh / install.sh)। key=printf ফরম্যাট (%s = আর্গুমেন্ট, %% = % চিহ্ন)।
+# generic (prompts get a trailing space added in code)
+choose_n=1-%s থেকে বেছে নিন:
+enter_number=1 থেকে %s পর্যন্ত একটি সংখ্যা লিখুন।
+no_input=কোনো ইনপুট নেই (stdin বন্ধ হয়ে গেছে)।
+unknown_option=অজানা অপশন: %s (--help দেখুন)
+cancel=বাতিল
+# 1. project
+step_project=1/7 প্রজেক্ট
+project_folder=প্রজেক্ট ফোল্ডার: %s
+not_in_home=%s-এ নয়, একটি প্রজেক্ট ফোল্ডারের ভেতরে এটি চালান।
+kit_folder=এটি কিটের নিজের ফোল্ডার; প্রজেক্টের ধাপগুলো এই ফোল্ডারেই প্রয়োগ হবে।
+dry_run_notice=ড্রাই রান: কিছুই লেখা বা ইনস্টল করা হবে না।
+confirm_setup=এই ফোল্ডারের জন্য pi সেট আপ করবেন?
+need_curl=curl প্রয়োজন।
+# 2. pi
+step_pi=2/7 pi
+pi_found=pi %s (%s)
+pi_missing=pi ইনস্টল করা নেই।
+pi_how=pi কীভাবে ইনস্টল করবেন?
+pi_opt_official=অফিশিয়াল ইনস্টলার: curl -fsSL https://pi.dev/install.sh | sh (প্রস্তাবিত, নিজস্ব Node সহ)
+pi_opt_npm=npm: npm install -g --ignore-scripts @earendil-works/pi-coding-agent (Node 22.19+ প্রয়োজন)
+node_missing_npm=Node.js পাওয়া যায়নি। Node 22.19+ ইনস্টল করুন অথবা অফিশিয়াল ইনস্টলার ব্যবহার করুন।
+node_too_old=Node %s অনেক পুরোনো; pi-এর জন্য 22.19+ প্রয়োজন।
+pi_not_on_path=pi এখনও PATH-এ নেই। একটি নতুন টার্মিনাল খুলে স্ক্রিপ্টটি আবার চালান।
+pi_installed=pi %s ইনস্টল হয়েছে
+pi_too_old=pi %s সংস্করণটি 1.0-এর চেয়ে পুরোনো; এই কিট pi 1.x (বিল্ট-ইন MCP, codemode)-এর ওপর নির্ভর করে।
+pi_update_q=এখনই pi আপডেট করবেন (pi update self)?
+node_missing=Node.js পাওয়া যায়নি। সাধারণত pi ইনস্টলার এটি সঙ্গে দেয়; ইনস্টলারটি আবার চালান।
+# 3. models
+step_models=3/7 মডেল
+mode_q=কোন মডেল ব্যবহার করবেন?
+mode_local=শুধু লোকাল সার্ভার (oMLX, Ollama, LM Studio, llama.cpp, অন্যান্য)
+mode_cloud=শুধু ক্লাউড প্রোভাইডার (OpenRouter, DeepSeek, Z.ai, Kimi, যেকোনো OpenAI-সামঞ্জস্যপূর্ণ API)
+mode_both=দুটোই: সাধারণত লোকাল, কঠিন কাজে ক্লাউড
+local_server_q=কোন লোকাল সার্ভার?
+llama_router=llama.cpp রাউটার (llama-server)
+other_server=অন্য কোনো OpenAI-সামঞ্জস্যপূর্ণ সার্ভার
+llama_builtin=pi-তে একটি বিল্ট-ইন llama.cpp প্রোভাইডার আছে। মডেল ছাড়াই রাউটার চালু করুন, যেমন:
+router_url=রাউটারের URL
+router_ok=রাউটার সাড়া দিচ্ছে।
+router_no=%s/health থেকে কোনো সাড়া নেই (pi ব্যবহারের আগে এটি চালু করুন)।
+llama_env=আপনার শেল প্রোফাইলে যোগ করুন: export LLAMA_BASE_URL=%s
+llama_next=pi-তে /llama চালিয়ে একটি মডেল লোড করুন, তারপর /model দিয়ে সেটি বেছে নিন।
+provider_id=pi-এর জন্য প্রোভাইডার ID (অক্ষর, সংখ্যা, -)
+base_url=বেস URL (OpenAI-সামঞ্জস্যপূর্ণ, সাধারণত /v1 দিয়ে শেষ হয়)
+provider_exists=models.json-এ ইতিমধ্যে "%s" প্রোভাইডার আছে; বেছে নেওয়া মডেলের সেটিংস বদলে যাবে (অন্য মডেলগুলো থাকবে)।
+needs_key_q=সার্ভারের কি API কী লাগে?
+asking_models=%s/models-এ জিজ্ঞেস করা হচ্ছে ...
+list_failed=মডেলের তালিকা পাওয়া যায়নি (সার্ভার কি চলছে, আর কী-টি কি সঠিক?)।
+what_now=এখন কী করবেন?
+retry=আবার চেষ্টা করুন (আগে সার্ভার চালু করুন)
+type_model=মডেল ID লিখুন
+model_id_server=সার্ভারে মডেলটির ID
+model_required=একটি মডেল ID প্রয়োজন।
+omlx_ctx=oMLX-এ সেট করা কনটেক্সট উইন্ডো: %s (sampling.max_context_window)।
+ctx_warn=মডেলের ঘোষিত সর্বোচ্চ মান নয়, সার্ভার আসলে যতটা কনটেক্সট দেয় সেটিই দিন; নইলে কমপ্যাকশন সময়মতো চালু হবে না।
+ctx_q=কনটেক্সট উইন্ডো (টোকেন)
+ctx_number=কনটেক্সট উইন্ডো অবশ্যই একটি সংখ্যা হতে হবে।
+maxout_q=প্রতি উত্তরে সর্বোচ্চ আউটপুট টোকেন
+thinking_q=মডেলটির কি থিংকিং (রিজনিং) মোড আছে?
+images_q=এটি কি ছবি ইনপুট নেয়?
+local_model=লোকাল মডেল: %s
+# api keys
+key_where=%s-এর API কী কোথায় রাখবেন?
+key_login=পরে pi-এর ভেতরে /login %s দিয়ে লগ ইন করুন (pi নিজেই কী সংরক্ষণ করে)
+key_keychain=macOS Keychain (প্রতিটি অনুরোধে pi security কমান্ড দিয়ে এটি পড়ে)
+key_env=এনভায়রনমেন্ট ভ্যারিয়েবল $%s (আপনি নিজে শেল প্রোফাইলে export করবেন)
+key_plain=models.json-এ সাধারণ টেক্সট হিসেবে (শুধু লোকাল সার্ভারের কী-এর জন্য)
+key_dry=%s-এর API কী (ড্রাই রান: শুধু মেমোরিতে রাখা হবে)
+key_twice=macOS দুবার কী চাইবে (এটি এই স্ক্রিপ্টে নয়, security টুলে লেখা হয়)।
+keychain_failed=Keychain-এ লেখা যায়নি।
+key_stored=কী-টি লগইন কিচেইনে "%s" নামে সংরক্ষণ করা হয়েছে।
+env_set=এই শেলে $%s সেট করা আছে।
+env_unset=$%s সেট করা নেই। আপনার শেল প্রোফাইলে যোগ করুন: export %s=...
+key_paste=এখনই পরীক্ষা করতে কী-টি পেস্ট করুন (শুধু মেমোরিতে রাখা হবে, এড়িয়ে যেতে Enter চাপুন)
+api_key=API কী
+# model picker
+models_filter=মোট %sটি মডেল আছে। নাম দিয়ে ফিল্টার করুন (যেমন qwen, glm, kimi, deepseek)
+model_id=মডেল ID
+type_model_instead=এর বদলে মডেল ID লিখুন
+which_model=কোন মডেল?
+# cloud
+cloud_warn=এগোনোর আগে: খরচের সীমা দেওয়া একটি আলাদা API কী ব্যবহার করুন, আর কাজের কোডের জন্য প্রোভাইডারের ডেটা/ট্রেনিং নীতি দেখে নিন।
+cloud_q=কোন ক্লাউড প্রোভাইডার?
+openrouter_opt=OpenRouter (এক কী-তে সব মডেল)
+other_builtin=অন্য কোনো বিল্ট-ইন প্রোভাইডার
+custom_endpoint=কাস্টম OpenAI-সামঞ্জস্যপূর্ণ এন্ডপয়েন্ট
+which_one=কোনটি?
+subscription=(সাবস্ক্রিপশন)
+asking_pi_models=এই কী দিয়ে কোন কোন %s মডেল ব্যবহার করা যায়, pi-কে জিজ্ঞেস করা হচ্ছে ...
+cant_list=এখনও মডেলের তালিকা পাওয়া যাচ্ছে না। লগ ইন করার পর 'pi --list-models %s' ID-গুলো দেখাবে।
+model_id_later=মডেল ID (পরে /model দিয়ে বাছতে Enter চাপুন)
+base_url_v1=বেস URL (/v1 দিয়ে শেষ)
+list_failed_url=%s থেকে মডেলের তালিকা পাওয়া যায়নি।
+model_required_custom=কাস্টম প্রোভাইডারের জন্য একটি মডেল ID প্রয়োজন।
+prices=দাম, প্রতি মিলিয়ন টোকেনে USD-তে, প্রোভাইডারের প্রাইসিং পেজ থেকে (pi খরচের হিসাবে এগুলো ব্যবহার করে)।
+price_input=  ইনপুট
+price_output=  আউটপুট
+price_cache_read=  ক্যাশ রিড
+price_cache_write=  ক্যাশ রাইট
+cache_ttl_q=প্রম্পট ক্যাশের মেয়াদ, সেকেন্ডে (প্রোভাইডার ক্যাশ না করলে 0)
+cloud_provider=ক্লাউড প্রোভাইডার: %s
+cloud_provider_model=ক্লাউড প্রোভাইডার: %s (মডেল %s)
+# 4. settings
+step_settings=4/7 pi সেটিংস
+default_q=ডিফল্ট হিসেবে কোন মডেল চালু হবে?
+default_local=সব জায়গায় লোকাল; প্রয়োজনে ক্লাউড (pi --model ...)
+default_project=সাধারণত লোকাল, কিন্তু এই প্রজেক্টে ক্লাউড ডিফল্ট
+default_cloud=সব জায়গায় ক্লাউড
+settings_changes=%s-এ পরিবর্তন:
+settings_note=(কম ডিফল্ট থিংকিং, codemode চালু, লোকাল উইন্ডো অনুযায়ী কমপ্যাকশন, টিউনিংয়ের সময় ক্যাশ-মিস নোটিশ চালু)
+apply_q=এই সেটিংস প্রয়োগ করবেন?
+settings_skipped=সেটিংস অপরিবর্তিত রাখা হয়েছে।
+project_trust=প্রজেক্টটিকে ট্রাস্ট করার পরেই pi .pi/settings.json পড়ে (প্রথমবার চালানোর সময় জিজ্ঞেস করবে)।
+aliases_q=শেল অ্যালিয়াস যোগ করবেন (pil = লোকাল, pic = ক্লাউড)?
+aliases_dry=%s-এ যা লেখা হবে:
+aliases_added=%s-এ অ্যালিয়াস যোগ করা হয়েছে (ব্যবহার করতে একটি নতুন টার্মিনাল খুলুন)।
+# 5. kit
+step_kit=5/7 স্কিল, নিয়ম, কোয়ালিটি গেট
+gate_q=কোয়ালিটি-গেট এক্সটেনশন ইনস্টল করবেন (এজেন্টের কাজ শেষ হলে .pi/check আবার চালায়)?
+mcp_title=MCP সার্ভার:
+probe_q=  Probe (পুরো ফাংশন ফেরত দেয় এমন লোকাল কোড সার্চ, আপনার মেশিনেই চলে) যোগ করবেন?
+probe_install_q=  Probe ইনস্টল করা নেই। npm install -g @probelabs/probe@latest চালাবেন?
+probe_later=  পরে ইনস্টল করুন; তার আগ পর্যন্ত pi probe-কে সংযোগবিচ্ছিন্ন দেখাবে।
+context7_q=  Context7 (হালনাগাদ লাইব্রেরি ডকুমেন্টেশন; রিমোট, লাইব্রেরির নাম ও প্রশ্ন context7.com-এ পাঠায়) যোগ করবেন?
+# 6. packages
+step_packages=6/7 pi প্যাকেজ
+packages_warn=প্যাকেজগুলো আপনার অনুমতিতে কোড চালায়। আগে https://pi.dev/packages/<name>-এ সেগুলো দেখে নিন।
+tier_skip=%s বাদ দেওয়া হলো: pi ইনস্টল করা নেই (ড্রাই রান)।
+tier_core=core: pi-lens (ডায়াগনস্টিকস), cc-safety-net, rpiv-todo-lean, pi-token-killer ইনস্টল করবেন?
+tier_tokens=tokens: pi-vcc (LLM ছাড়া কমপ্যাকশন), pi-prefix-stabilizer, pi-caveman ইনস্টল করবেন?
+tier_ondemand=on demand: প্ল্যান মোড, /simplify, সাবএজেন্ট ইনস্টল করবেন?
+context_diet_note=(pi-context-diet নিষ্ক্রিয় বিরতির পরে পুরোনো আউটপুট ছেঁটে ফেলে; লোকাল মডেলে প্রতিটি বিরতিতে একবার করে আবার প্রিফিল হয়)
+tier_cloud=cloud: pi-cache-optimizer, pi-context-diet ইনস্টল করবেন?
+tier_tuning=tuning: pi-context-view (কনটেক্সটে কী আছে দেখায়; টিউনিংয়ের পরে সরিয়ে দিন) ইনস্টল করবেন?
+# 7. project files
+step_project_files=7/7 প্রজেক্ট ফাইল
+git_init_q=এখানে কোনো git রিপো নেই। একটি শুরু করবেন (কোয়ালিটি গেট ও /simplify git diff ব্যবহার করে)?
+check_replace_q=বিদ্যমান .pi/check (%s) বদলে দেবেন?
+check_q=কোয়ালিটি গেটের জন্য দ্রুত চেক কমান্ড (এড়িয়ে যেতে Enter)
+check_dry=.pi/check-এ যা লেখা হবে: %s
+check_written=.pi/check: %s
+agents_q=এই প্রজেক্টের জন্য একটি শুরুর AGENTS.md তৈরি করবেন (ছোট, ইংরেজিতে, শনাক্ত করা কমান্ডসহ)?
+agents_dry=AGENTS.md-এ যা লেখা হবে:
+agents_created=AGENTS.md তৈরি হয়েছে। TODO লাইনগুলো পূরণ করুন।
+agents_exists=প্রজেক্টে আগে থেকেই AGENTS.md বা CLAUDE.md আছে; যেমন আছে তেমনই রাখা হলো।
+gitignore_dry=.gitignore-এ .pi/handoff.md যোগ করা হবে
+gitignore_added=.gitignore: .pi/handoff.md যোগ করা হয়েছে
+# summary
+step_checks=যাচাই
+creds_ready=%s: ক্রেডেনশিয়াল প্রস্তুত
+not_logged_in=%s: এখনও লগ ইন করা হয়নি (pi-তে /login %s চালান)
+not_ready=%s: প্রস্তুত নয় (%s)
+local_ok=লোকাল সার্ভার %s-এ সাড়া দিচ্ছে
+local_no=লোকাল সার্ভার %s-এ সাড়া দিচ্ছে না
+step_next=পরবর্তী ধাপ
+next_run=cd "%s" && pi        (প্রজেক্ট ট্রাস্টের প্রশ্নে হ্যাঁ বলুন)
+next_login=/login %s         ক্লাউড কী pi-তে সংরক্ষণ করুন
+next_model=/model                       একটি ডিফল্ট মডেল বেছে নিন
+next_map=/skill:project-map           .pi/MAP.md লেখে, যাতে পরের সেশনে আবার খুঁজতে না হয়
+next_mcp=pi mcp list                  MCP সার্ভারগুলো সংযুক্ত হচ্ছে কি না দেখায়
+next_rtk=/rtk settings                ফাইল-রিড ফিল্টার বন্ধ করুন (pi-এর edit-এর জন্য হুবহু টেক্সট লাগে)
+next_caveman=/caveman lite                সংক্ষিপ্ত উত্তর; বেশি শক্তিশালী লেভেলে স্পষ্টতা কমতে পারে
+omlx_tip1=oMLX ড্যাশবোর্ড: chunked prefill ও prefill memory guard চালু করুন, সর্বোচ্চ একসঙ্গে অনুরোধ 2-এ সেট করুন,
+omlx_tip2=আর SSD ক্যাশ চালু রাখুন (docs/gameplan.md, Phase 0.3)।
+measure=আরও কিছু যোগ করার আগে মেপে দেখুন: docs/gameplan.md, Phase 6।
+dry_done=ড্রাই রান শেষ; কিছুই বদলানো হয়নি।
+# install.sh
+inst_backed_up=  %s ব্যাকআপ করা হয়েছে -> %s/
+inst_skill=  স্কিল: %s
+inst_skills_done=স্কিল ইনস্টল হয়েছে। খোলা pi সেশনে /reload চালান।
+inst_agents_same=  AGENTS.md ইতিমধ্যে হালনাগাদ
+inst_agents_backup=  বিদ্যমান AGENTS.md ব্যাকআপ করা হয়েছে -> %s (যে নিয়মগুলো রাখতে চান সেগুলো মিলিয়ে নিন)
+inst_agents_done=  গ্লোবাল নিয়ম: %s
+inst_ext_done=এক্সটেনশন ইনস্টল হয়েছে। প্রতিটি প্রজেক্টে চালু করতে <project>/.pi/check-এ এক লাইনের দ্রুত চেক লিখুন।
+inst_mcp_exists=%s আগে থেকেই আছে; ওভাররাইট করা হবে না। config/mcp.json নিজে মিলিয়ে নিন।
+inst_mcp_done=MCP কনফিগ ইনস্টল হয়েছে।
+inst_probe_missing=দ্রষ্টব্য: 'probe' PATH-এ নেই। চালান: npm install -g @probelabs/probe@latest
+inst_mcp_check=যাচাই করুন: pi mcp list
+inst_pkg_usage=ব্যবহার: %s packages core|tokens|ondemand|tuning|cloud|ab
+inst_pkg_warn=pi প্যাকেজ কোড চালায়। ইনস্টলের আগে প্রতিটির সোর্স দেখে নিন।

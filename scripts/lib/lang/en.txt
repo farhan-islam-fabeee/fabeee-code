@@ -1,0 +1,182 @@
+# English messages for setup.sh and install.sh. key=printf format (%s = argument, %% = literal %).
+# generic (prompts get a trailing space added in code)
+choose_n=Choose 1-%s:
+enter_number=Enter a number from 1 to %s.
+no_input=No input (stdin closed).
+unknown_option=Unknown option: %s (try --help)
+cancel=Cancel
+# 1. project
+step_project=1/7 Project
+project_folder=Project folder: %s
+not_in_home=Run this inside a project folder, not %s.
+kit_folder=This is the kit's own folder; the project steps will apply to it.
+dry_run_notice=Dry run: nothing will be written or installed.
+confirm_setup=Set up pi for this folder?
+need_curl=curl is required.
+# 2. pi
+step_pi=2/7 pi
+pi_found=pi %s at %s
+pi_missing=pi is not installed.
+pi_how=How should pi be installed?
+pi_opt_official=Official installer: curl -fsSL https://pi.dev/install.sh | sh (recommended, brings its own Node)
+pi_opt_npm=npm: npm install -g --ignore-scripts @earendil-works/pi-coding-agent (needs Node 22.19+)
+node_missing_npm=Node.js not found. Install Node 22.19+ or use the official installer.
+node_too_old=Node %s is too old; pi needs 22.19+.
+pi_not_on_path=pi is still not on PATH. Open a new terminal and run this script again.
+pi_installed=pi %s installed
+pi_too_old=pi %s is older than 1.0; this kit relies on pi 1.x (built-in MCP, codemode).
+pi_update_q=Update pi now (pi update self)?
+node_missing=Node.js not found. The pi installer normally provides it; re-run the installer.
+# 3. models
+step_models=3/7 Models
+mode_q=Which models will you use?
+mode_local=Local server only (oMLX, Ollama, LM Studio, llama.cpp, other)
+mode_cloud=Cloud provider only (OpenRouter, DeepSeek, Z.ai, Kimi, any OpenAI-compatible API)
+mode_both=Both: local by default, cloud for hard tasks
+local_server_q=Which local server?
+llama_router=llama.cpp router (llama-server)
+other_server=Other OpenAI-compatible server
+llama_builtin=pi has a built-in llama.cpp provider. Start the router without a model, for example:
+router_url=Router URL
+router_ok=Router is answering.
+router_no=No answer from %s/health (start it before using pi).
+llama_env=Add to your shell profile: export LLAMA_BASE_URL=%s
+llama_next=In pi: run /llama to load a model, then /model to select it.
+provider_id=Provider ID for pi (letters, digits, -)
+base_url=Base URL (OpenAI-compatible, usually ending in /v1)
+provider_exists=models.json already has a provider "%s"; its settings for the chosen model will be replaced (other models kept).
+needs_key_q=Does the server require an API key?
+asking_models=Asking %s/models ...
+list_failed=Couldn't list models (is the server running, and is the key right?).
+what_now=What now?
+retry=Retry (start the server first)
+type_model=Type the model ID
+model_id_server=Model ID as the server names it
+model_required=A model ID is required.
+omlx_ctx=oMLX's configured context window is %s (sampling.max_context_window).
+ctx_warn=Use the context the server actually serves, not the model's advertised maximum, or compaction will never trigger in time.
+ctx_q=Context window in tokens
+ctx_number=Context window must be a number.
+maxout_q=Max output tokens per reply
+thinking_q=Does the model have a thinking (reasoning) mode?
+images_q=Does it accept images?
+local_model=Local model: %s
+# api keys
+key_where=Where should the API key for %s live?
+key_login=Log in inside pi later with /login %s (pi stores the key itself)
+key_keychain=macOS Keychain (pi reads it with the security command on each request)
+key_env=Environment variable $%s (you export it in your shell profile)
+key_plain=Plain text in models.json (only for a local server's key)
+key_dry=API key for %s (dry run: kept in memory only)
+key_twice=macOS will ask for the key twice (it is typed into the security tool, not this script).
+keychain_failed=Keychain write failed.
+key_stored=Key stored in the login keychain as "%s".
+env_set=$%s is set in this shell.
+env_unset=$%s is not set. Add this to your shell profile: export %s=...
+key_paste=Paste the key to test it now (kept in memory only, Enter to skip)
+api_key=API key
+# model picker
+models_filter=%s models available. Filter by name (e.g. qwen, glm, kimi, deepseek)
+model_id=Model ID
+type_model_instead=Type a model ID instead
+which_model=Which model?
+# cloud
+cloud_warn=Before you continue: use a separate API key with a spending cap, and check the provider's data/training policy for work code.
+cloud_q=Which cloud provider?
+openrouter_opt=OpenRouter (one key, every model)
+other_builtin=Another built-in provider
+custom_endpoint=Custom OpenAI-compatible endpoint
+which_one=Which one?
+subscription=(subscription)
+asking_pi_models=Asking pi which %s models this key can use ...
+cant_list=Can't list models yet. After logging in, 'pi --list-models %s' shows the IDs.
+model_id_later=Model ID (Enter to pick later with /model)
+base_url_v1=Base URL (ending in /v1)
+list_failed_url=Couldn't list models from %s.
+model_required_custom=A model ID is required for a custom provider.
+prices=Prices in USD per million tokens, from the provider's pricing page (pi uses them for cost totals).
+price_input=  input
+price_output=  output
+price_cache_read=  cache read
+price_cache_write=  cache write
+cache_ttl_q=Prompt cache lifetime in seconds (0 if the provider doesn't cache)
+cloud_provider=Cloud provider: %s
+cloud_provider_model=Cloud provider: %s (model %s)
+# 4. settings
+step_settings=4/7 pi settings
+default_q=Which model should start by default?
+default_local=Local everywhere; cloud on demand (pi --model ...)
+default_project=Local by default, but cloud by default in this project
+default_cloud=Cloud everywhere
+settings_changes=Changes to %s:
+settings_note=(low default thinking, codemode on, compaction sized to the local window, cache-miss notices on while tuning)
+apply_q=Apply these settings?
+settings_skipped=Settings left unchanged.
+project_trust=pi reads .pi/settings.json only after you trust the project (it asks on first run).
+aliases_q=Add shell aliases (pil = local, pic = cloud)?
+aliases_dry=write to %s:
+aliases_added=Aliases added to %s (open a new terminal to use them).
+# 5. kit
+step_kit=5/7 Skills, rules, quality gate
+gate_q=Install the quality-gate extension (re-runs .pi/check when the agent finishes)?
+mcp_title=MCP servers:
+probe_q=  Probe: local code search that returns whole functions (runs on your machine)?
+probe_install_q=  Probe isn't installed. Run npm install -g @probelabs/probe@latest?
+probe_later=  Install it later, or pi will report probe as disconnected.
+context7_q=  Context7: up-to-date library docs (remote; sends library names and queries to context7.com)?
+# 6. packages
+step_packages=6/7 pi packages
+packages_warn=Packages run code with your permissions. Review them at https://pi.dev/packages/<name> first.
+tier_skip=Skipping %s: pi isn't installed (dry run).
+tier_core=core: pi-lens (diagnostics), cc-safety-net, rpiv-todo-lean, pi-token-killer?
+tier_tokens=tokens: pi-vcc (no-LLM compaction), pi-prefix-stabilizer, pi-caveman?
+tier_ondemand=on demand: plan mode, /simplify, subagents?
+context_diet_note=(pi-context-diet trims stale output after idle gaps; on the local model that costs one re-prefill per gap)
+tier_cloud=cloud: pi-cache-optimizer, pi-context-diet?
+tier_tuning=tuning: pi-context-view (see what fills the context; remove after tuning)?
+# 7. project files
+step_project_files=7/7 Project files
+git_init_q=No git repo here. Initialize one (the quality gate and /simplify use git diff)?
+check_replace_q=Replace the existing .pi/check (%s)?
+check_q=Fast check command for the quality gate (Enter to skip)
+check_dry=write .pi/check: %s
+check_written=.pi/check: %s
+agents_q=Create a starter AGENTS.md for this project (short, English, with detected commands)?
+agents_dry=write AGENTS.md:
+agents_created=AGENTS.md created. Fill in the TODO lines.
+agents_exists=Project already has an AGENTS.md or CLAUDE.md; left as is.
+gitignore_dry=append .pi/handoff.md to .gitignore
+gitignore_added=.gitignore: added .pi/handoff.md
+# summary
+step_checks=Checks
+creds_ready=%s: credentials ready
+not_logged_in=%s: not logged in yet (run /login %s in pi)
+not_ready=%s: not ready (%s)
+local_ok=local server answers at %s
+local_no=local server not answering at %s
+step_next=Next steps
+next_run=cd "%s" && pi        (answer yes to the project trust prompt)
+next_login=/login %s         store the cloud key in pi
+next_model=/model                       pick a default model
+next_map=/skill:project-map           writes .pi/MAP.md so later sessions skip re-exploring
+next_mcp=pi mcp list                  confirms the MCP servers connect
+next_rtk=/rtk settings                turn OFF the file-read filter (pi's edit needs exact text)
+next_caveman=/caveman lite                terse replies; the stronger levels can hurt clarity
+omlx_tip1=oMLX dashboard: turn on chunked prefill and the prefill memory guard, set max concurrent requests to 2,
+omlx_tip2=and keep the SSD cache on (docs/gameplan.md, Phase 0.3).
+measure=Measure before adding more: docs/gameplan.md, Phase 6.
+dry_done=Dry run finished; nothing was changed.
+# install.sh
+inst_backed_up=  backed up %s -> %s/
+inst_skill=  skill: %s
+inst_skills_done=Skills installed. Run /reload in an open pi session.
+inst_agents_same=  AGENTS.md already up to date
+inst_agents_backup=  backed up existing AGENTS.md -> %s (merge any rules you still want)
+inst_agents_done=  global rules: %s
+inst_ext_done=Extension installed. Add a one-line fast check to <project>/.pi/check to enable it per project.
+inst_mcp_exists=%s already exists; not overwriting. Merge config/mcp.json into it by hand.
+inst_mcp_done=MCP config installed.
+inst_probe_missing=Note: 'probe' not on PATH. Run: npm install -g @probelabs/probe@latest
+inst_mcp_check=Check with: pi mcp list
+inst_pkg_usage=Usage: %s packages core|tokens|ondemand|tuning|cloud|ab
+inst_pkg_warn=Pi packages run code. Review each one's source before installing.

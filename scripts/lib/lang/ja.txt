@@ -1,0 +1,182 @@
+# 日本語メッセージ (setup.sh / install.sh)。key=printf 形式 (%s = 引数、%% = % そのもの)。
+# generic (prompts get a trailing space added in code)
+choose_n=1〜%s から選択:
+enter_number=1〜%s の数字を入力してください。
+no_input=入力がありません（標準入力が閉じられました）。
+unknown_option=不明なオプションです: %s（--help を参照）
+cancel=キャンセル
+# 1. project
+step_project=1/7 プロジェクト
+project_folder=プロジェクトフォルダー: %s
+not_in_home=%s ではなく、プロジェクトフォルダーの中で実行してください。
+kit_folder=ここはキット自体のフォルダーです。プロジェクトの手順はこのフォルダーに適用されます。
+dry_run_notice=ドライラン: 何も書き込まず、何もインストールしません。
+confirm_setup=このフォルダーで pi をセットアップしますか？
+need_curl=curl が必要です。
+# 2. pi
+step_pi=2/7 pi
+pi_found=pi %s（%s）
+pi_missing=pi がインストールされていません。
+pi_how=pi のインストール方法を選んでください。
+pi_opt_official=公式インストーラー: curl -fsSL https://pi.dev/install.sh | sh（推奨。Node も同梱）
+pi_opt_npm=npm: npm install -g --ignore-scripts @earendil-works/pi-coding-agent（Node 22.19 以上が必要）
+node_missing_npm=Node.js が見つかりません。Node 22.19 以上をインストールするか、公式インストーラーを使ってください。
+node_too_old=Node %s は古すぎます。pi には 22.19 以上が必要です。
+pi_not_on_path=pi がまだ PATH にありません。新しいターミナルを開いて、このスクリプトをもう一度実行してください。
+pi_installed=pi %s をインストールしました
+pi_too_old=pi %s は 1.0 より古いバージョンです。このキットは pi 1.x（組み込み MCP、codemode）が前提です。
+pi_update_q=今すぐ pi を更新しますか（pi update self）？
+node_missing=Node.js が見つかりません。通常は pi のインストーラーが用意します。インストーラーを再実行してください。
+# 3. models
+step_models=3/7 モデル
+mode_q=どのモデルを使いますか？
+mode_local=ローカルサーバーのみ（oMLX、Ollama、LM Studio、llama.cpp など）
+mode_cloud=クラウドプロバイダーのみ（OpenRouter、DeepSeek、Z.ai、Kimi、OpenAI 互換 API）
+mode_both=両方: 通常はローカル、難しいタスクはクラウド
+local_server_q=どのローカルサーバーを使いますか？
+llama_router=llama.cpp ルーター（llama-server）
+other_server=その他の OpenAI 互換サーバー
+llama_builtin=pi には llama.cpp プロバイダーが組み込まれています。モデルを指定せずにルーターを起動してください。例:
+router_url=ルーターの URL
+router_ok=ルーターが応答しています。
+router_no=%s/health から応答がありません（pi を使う前に起動してください）。
+llama_env=シェルのプロファイルに追加してください: export LLAMA_BASE_URL=%s
+llama_next=pi で /llama を実行してモデルを読み込み、/model で選択してください。
+provider_id=pi で使うプロバイダー ID（英数字と -）
+base_url=ベース URL（OpenAI 互換。通常は /v1 で終わります）
+provider_exists=models.json にはすでにプロバイダー "%s" があります。選んだモデルの設定は置き換えられます（ほかのモデルはそのまま）。
+needs_key_q=サーバーに API キーが必要ですか？
+asking_models=%s/models に問い合わせています...
+list_failed=モデル一覧を取得できませんでした（サーバーは起動していますか？ キーは正しいですか？）。
+what_now=どうしますか？
+retry=再試行（先にサーバーを起動してください）
+type_model=モデル ID を入力する
+model_id_server=サーバー上のモデル ID
+model_required=モデル ID が必要です。
+omlx_ctx=oMLX で設定されているコンテキストウィンドウは %s です（sampling.max_context_window）。
+ctx_warn=モデルの公称最大値ではなく、サーバーが実際に扱えるコンテキストを指定してください。そうしないと圧縮が間に合いません。
+ctx_q=コンテキストウィンドウ（トークン数）
+ctx_number=コンテキストウィンドウには数値を指定してください。
+maxout_q=1回の応答の最大出力トークン数
+thinking_q=このモデルには思考（推論）モードがありますか？
+images_q=画像入力に対応していますか？
+local_model=ローカルモデル: %s
+# api keys
+key_where=%s の API キーをどこに保存しますか？
+key_login=あとで pi の中で /login %s を実行してログインする（キーは pi が保存します）
+key_keychain=macOS キーチェーン（pi がリクエストごとに security コマンドで読み取ります）
+key_env=環境変数 $%s（シェルのプロファイルでご自身で export します）
+key_plain=models.json に平文で保存（ローカルサーバーのキー専用）
+key_dry=%s の API キー（ドライラン: メモリ上にのみ保持）
+key_twice=macOS がキーを2回尋ねます（このスクリプトではなく security ツールに入力されます）。
+keychain_failed=キーチェーンへの書き込みに失敗しました。
+key_stored=キーをログインキーチェーンに "%s" として保存しました。
+env_set=$%s はこのシェルで設定されています。
+env_unset=$%s が設定されていません。シェルのプロファイルに追加してください: export %s=...
+key_paste=今すぐテストする場合はキーを貼り付けてください（メモリ上にのみ保持。Enter でスキップ）
+api_key=API キー
+# model picker
+models_filter=モデルが %s 個あります。名前で絞り込んでください（例: qwen、glm、kimi、deepseek）
+model_id=モデル ID
+type_model_instead=モデル ID を直接入力する
+which_model=どのモデルを使いますか？
+# cloud
+cloud_warn=続ける前に: 利用上限を設定した専用の API キーを使い、業務コードについてはプロバイダーのデータ利用・学習ポリシーを確認してください。
+cloud_q=どのクラウドプロバイダーを使いますか？
+openrouter_opt=OpenRouter（1つのキーですべてのモデル）
+other_builtin=その他の組み込みプロバイダー
+custom_endpoint=カスタムの OpenAI 互換エンドポイント
+which_one=どれにしますか？
+subscription=（サブスクリプション）
+asking_pi_models=このキーで使える %s のモデルを pi に問い合わせています...
+cant_list=まだモデル一覧を取得できません。ログイン後に 'pi --list-models %s' で ID を確認できます。
+model_id_later=モデル ID（Enter であとから /model で選択）
+base_url_v1=ベース URL（/v1 で終わる）
+list_failed_url=%s からモデル一覧を取得できませんでした。
+model_required_custom=カスタムプロバイダーにはモデル ID が必要です。
+prices=料金（100万トークンあたりの USD。プロバイダーの料金ページの値。pi がコスト集計に使います）。
+price_input=  入力
+price_output=  出力
+price_cache_read=  キャッシュ読み取り
+price_cache_write=  キャッシュ書き込み
+cache_ttl_q=プロンプトキャッシュの保持時間（秒。キャッシュがない場合は 0）
+cloud_provider=クラウドプロバイダー: %s
+cloud_provider_model=クラウドプロバイダー: %s（モデル %s）
+# 4. settings
+step_settings=4/7 pi の設定
+default_q=デフォルトで起動するモデルはどれにしますか？
+default_local=どこでもローカル。クラウドは必要なときだけ（pi --model ...）
+default_project=通常はローカル。ただしこのプロジェクトではクラウドをデフォルトにする
+default_cloud=どこでもクラウド
+settings_changes=%s への変更:
+settings_note=（思考レベルは低め、codemode 有効、圧縮はローカルのウィンドウに合わせて調整、調整中はキャッシュミス通知を表示）
+apply_q=この設定を適用しますか？
+settings_skipped=設定は変更していません。
+project_trust=pi は、プロジェクトを信頼したあとでのみ .pi/settings.json を読み込みます（初回起動時に確認されます）。
+aliases_q=シェルのエイリアスを追加しますか（pil = ローカル、pic = クラウド）？
+aliases_dry=%s への書き込み:
+aliases_added=%s にエイリアスを追加しました（新しいターミナルで使えます）。
+# 5. kit
+step_kit=5/7 スキル、ルール、品質ゲート
+gate_q=品質ゲート拡張機能をインストールしますか（エージェントの作業終了時に .pi/check を再実行します）？
+mcp_title=MCP サーバー:
+probe_q=  Probe（関数単位で結果を返すローカルのコード検索。お使いのマシン上で動作）を追加しますか？
+probe_install_q=  Probe がインストールされていません。npm install -g @probelabs/probe@latest を実行しますか？
+probe_later=  あとでインストールしてください。それまで pi は probe を未接続と表示します。
+context7_q=  Context7（最新のライブラリドキュメント。リモートで、ライブラリ名と検索内容を context7.com に送信）を追加しますか？
+# 6. packages
+step_packages=6/7 pi パッケージ
+packages_warn=パッケージはあなたの権限でコードを実行します。先に https://pi.dev/packages/<name> で内容を確認してください。
+tier_skip=%s をスキップします: pi がインストールされていません（ドライラン）。
+tier_core=core: pi-lens（診断）、cc-safety-net、rpiv-todo-lean、pi-token-killer をインストールしますか？
+tier_tokens=tokens: pi-vcc（LLM を使わない圧縮）、pi-prefix-stabilizer、pi-caveman をインストールしますか？
+tier_ondemand=on demand: プランモード、/simplify、サブエージェントをインストールしますか？
+context_diet_note=（pi-context-diet はアイドル時間のあとに古い出力を削ります。ローカルモデルでは、そのたびに再プリフィルが1回発生します）
+tier_cloud=cloud: pi-cache-optimizer、pi-context-diet をインストールしますか？
+tier_tuning=tuning: pi-context-view（コンテキストの中身を表示。調整後に削除）をインストールしますか？
+# 7. project files
+step_project_files=7/7 プロジェクトファイル
+git_init_q=ここには git リポジトリがありません。初期化しますか（品質ゲートと /simplify は git diff を使います）？
+check_replace_q=既存の .pi/check（%s）を置き換えますか？
+check_q=品質ゲート用の高速チェックコマンド（Enter でスキップ）
+check_dry=.pi/check への書き込み: %s
+check_written=.pi/check: %s
+agents_q=このプロジェクト用のひな形 AGENTS.md を作成しますか（短い英語、検出したコマンド入り）？
+agents_dry=AGENTS.md への書き込み:
+agents_created=AGENTS.md を作成しました。TODO の行を埋めてください。
+agents_exists=このプロジェクトにはすでに AGENTS.md か CLAUDE.md があります。そのままにします。
+gitignore_dry=.gitignore に .pi/handoff.md を追加
+gitignore_added=.gitignore: .pi/handoff.md を追加しました
+# summary
+step_checks=確認
+creds_ready=%s: 認証情報の準備ができています
+not_logged_in=%s: まだログインしていません（pi で /login %s を実行してください）
+not_ready=%s: 準備ができていません（%s）
+local_ok=ローカルサーバーが %s で応答しています
+local_no=ローカルサーバーが %s で応答しません
+step_next=次のステップ
+next_run=cd "%s" && pi        （プロジェクトの信頼確認には「はい」と答えてください）
+next_login=/login %s         クラウドのキーを pi に保存
+next_model=/model                       デフォルトのモデルを選択
+next_map=/skill:project-map           .pi/MAP.md を作成し、次回以降の再探索を省きます
+next_mcp=pi mcp list                  MCP サーバーの接続を確認
+next_rtk=/rtk settings                ファイル読み取りフィルターをオフに（pi の edit には正確なテキストが必要）
+next_caveman=/caveman lite                簡潔な応答に（強いレベルは分かりにくくなることがあります）
+omlx_tip1=oMLX のダッシュボード: chunked prefill と prefill memory guard をオンにし、最大同時リクエスト数を 2 にして、
+omlx_tip2=SSD キャッシュは有効のままにしてください（docs/gameplan.md、Phase 0.3）。
+measure=さらに追加する前に計測してください: docs/gameplan.md、Phase 6。
+dry_done=ドライランが完了しました。何も変更していません。
+# install.sh
+inst_backed_up=  %s をバックアップしました -> %s/
+inst_skill=  スキル: %s
+inst_skills_done=スキルをインストールしました。開いている pi セッションでは /reload を実行してください。
+inst_agents_same=  AGENTS.md はすでに最新です
+inst_agents_backup=  既存の AGENTS.md をバックアップしました -> %s（残したいルールは統合してください）
+inst_agents_done=  グローバルルール: %s
+inst_ext_done=拡張機能をインストールしました。プロジェクトごとに <project>/.pi/check に1行の高速チェックを書くと有効になります。
+inst_mcp_exists=%s はすでに存在するため上書きしません。config/mcp.json の内容を手動で統合してください。
+inst_mcp_done=MCP 設定をインストールしました。
+inst_probe_missing=注意: 'probe' が PATH にありません。npm install -g @probelabs/probe@latest を実行してください。
+inst_mcp_check=確認方法: pi mcp list
+inst_pkg_usage=使い方: %s packages core|tokens|ondemand|tuning|cloud|ab
+inst_pkg_warn=pi パッケージはコードを実行します。インストール前にそれぞれのソースを確認してください。

@@ -9,14 +9,17 @@
 #   ./scripts/install.sh packages <tier>     pi install the packages in a tier (see TIERS below)
 #   ./scripts/install.sh all                 skills + extension + mcp (no packages)
 #
-# Set DRY_RUN=1 to print actions without doing them.
+# Set DRY_RUN=1 to print actions without doing them. Messages follow PI_KIT_LANG (en, ja, ko, bn).
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SKILLS_DIR="${HOME}/.agents/skills"
 PI_DIR="${PI_CODING_AGENT_DIR:-${HOME}/.pi/agent}"
-STAMP="$(date +%Y%m%d-%H%M%S)"
+STAMP="${PI_KIT_STAMP:-$(date +%Y%m%d-%H%M%S)}"
+# shellcheck source=lib/i18n.sh
+source "$ROOT/scripts/lib/i18n.sh"
+set_lang "${PI_KIT_LANG:-en}"
 
 core=(pi-lens cc-safety-net @ssk_dev/rpiv-todo-lean pi-token-killer)
 tokens=(@sting8k/pi-vcc pi-prefix-stabilizer pi-caveman)
@@ -34,7 +37,7 @@ backup() {
   if [[ -e "$target" ]]; then
     run mkdir -p "$backup_root"
     run mv "$target" "$backup_root/"
-    echo "  backed up $(basename "$target") -> $backup_root/"
+    t inst_backed_up "$(basename "$target")" "$backup_root"; echo
   fi
 }
 
@@ -44,9 +47,9 @@ install_skills() {
     local name; name="$(basename "$dir")"
     backup "$SKILLS_DIR/$name" "${SKILLS_DIR}-backup-$STAMP"
     run cp -R "$dir" "$SKILLS_DIR/$name"
-    echo "  skill: $name"
+    t inst_skill "$name"; echo
   done
-  echo "Skills installed. Run /reload in an open pi session."
+  t inst_skills_done; echo
   install_context
 }
 
@@ -54,46 +57,46 @@ install_context() {
   local target="$PI_DIR/AGENTS.md"
   run mkdir -p "$PI_DIR"
   if [[ -e "$target" ]] && cmp -s "$ROOT/context/AGENTS.md" "$target"; then
-    echo "  AGENTS.md already up to date"
+    t inst_agents_same; echo
     return
   fi
   if [[ -e "$target" ]]; then
     # pi only loads the exact name AGENTS.md, so a suffixed backup beside it stays inert
     run mv "$target" "$target.backup-$STAMP"
-    echo "  backed up existing AGENTS.md -> $target.backup-$STAMP (merge any rules you still want)"
+    t inst_agents_backup "$target.backup-$STAMP"; echo
   fi
   run cp "$ROOT/context/AGENTS.md" "$target"
-  echo "  global rules: $target"
+  t inst_agents_done "$target"; echo
 }
 
 install_extension() {
   run mkdir -p "$PI_DIR/extensions"
   backup "$PI_DIR/extensions/quality-gate.ts" "$PI_DIR/extensions-backup-$STAMP"
   run cp "$ROOT/extensions/quality-gate.ts" "$PI_DIR/extensions/quality-gate.ts"
-  echo "Extension installed. Add a one-line fast check to <project>/.pi/check to enable it per project."
+  t inst_ext_done; echo
 }
 
 install_mcp() {
   if [[ -e "$PI_DIR/mcp.json" ]]; then
-    echo "$PI_DIR/mcp.json already exists; not overwriting. Merge config/mcp.json into it by hand."
+    t inst_mcp_exists "$PI_DIR/mcp.json"; echo
   else
     run mkdir -p "$PI_DIR"
     run cp "$ROOT/config/mcp.json" "$PI_DIR/mcp.json"
-    echo "MCP config installed."
+    t inst_mcp_done; echo
   fi
-  command -v probe >/dev/null || echo "Note: 'probe' not on PATH. Run: npm install -g @probelabs/probe@latest"
-  echo "Check with: pi mcp list"
+  command -v probe >/dev/null || { t inst_probe_missing; echo; }
+  t inst_mcp_check; echo
 }
 
 install_packages() {
   local tier="${1:-}"
   case "$tier" in
     core|tokens|ondemand|tuning|cloud|ab) ;;
-    *) echo "Usage: $0 packages core|tokens|ondemand|tuning|cloud|ab" >&2; exit 2 ;;
+    *) { t inst_pkg_usage "$0"; echo; } >&2; exit 2 ;;
   esac
   # tier is validated above; eval keeps this working on macOS's bash 3.2 (no namerefs)
   local pkgs; eval "pkgs=(\"\${${tier}[@]}\")"
-  echo "Pi packages run code. Review each one's source before installing."
+  t inst_pkg_warn; echo
   for pkg in "${pkgs[@]}"; do
     run pi install "npm:$pkg"
   done

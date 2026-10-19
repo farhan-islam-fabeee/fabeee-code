@@ -16,6 +16,19 @@ const DRY = process.env.PI_KIT_DRY_RUN === "1";
 const STAMP = process.env.PI_KIT_STAMP || String(Date.now());
 const env = (name, fallback = "") => process.env[name] ?? fallback;
 
+// Messages printed to the user, in the language setup.sh chose (PI_KIT_LANG).
+const MESSAGES = {
+  en: { unchanged: "unchanged", dryWrite: "[dry-run] would write", backup: "backup", wrote: "wrote",
+        noChanges: "(no changes)", unset: "(unset)", keptMcp: "kept existing MCP server", addedMcp: "added MCP server" },
+  ja: { unchanged: "変更なし", dryWrite: "[ドライラン] 書き込む内容", backup: "バックアップ", wrote: "書き込みました",
+        noChanges: "（変更なし）", unset: "（未設定）", keptMcp: "既存の MCP サーバーを維持", addedMcp: "MCP サーバーを追加" },
+  ko: { unchanged: "변경 없음", dryWrite: "[드라이 런] 쓸 내용", backup: "백업", wrote: "저장함",
+        noChanges: "(변경 없음)", unset: "(설정 안 됨)", keptMcp: "기존 MCP 서버 유지", addedMcp: "MCP 서버 추가" },
+  bn: { unchanged: "অপরিবর্তিত", dryWrite: "[ড্রাই রান] যা লেখা হবে", backup: "ব্যাকআপ", wrote: "লেখা হয়েছে",
+        noChanges: "(কোনো পরিবর্তন নেই)", unset: "(সেট করা নেই)", keptMcp: "বিদ্যমান MCP সার্ভার রাখা হয়েছে", addedMcp: "MCP সার্ভার যোগ করা হয়েছে" },
+};
+const msg = (key) => (MESSAGES[env("PI_KIT_LANG")] || MESSAGES.en)[key];
+
 const isObj = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 
 function readJson(file) {
@@ -27,11 +40,11 @@ function readJson(file) {
 function writeJson(file, data) {
   const text = JSON.stringify(data, null, 2) + "\n";
   if (fs.existsSync(file) && fs.readFileSync(file, "utf8") === text) {
-    console.log(`  unchanged: ${file}`);
+    console.log(`  ${msg("unchanged")}: ${file}`);
     return;
   }
   if (DRY) {
-    console.log(`  [dry-run] would write ${file}:\n${text}`);
+    console.log(`  ${msg("dryWrite")}: ${file}\n${text}`);
     return;
   }
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -39,10 +52,10 @@ function writeJson(file, data) {
   // Only the first write in a run backs up, so the backup is always the pre-setup file.
   if (fs.existsSync(file) && !fs.existsSync(backup)) {
     fs.copyFileSync(file, backup);
-    console.log(`  backup: ${backup}`);
+    console.log(`  ${msg("backup")}: ${backup}`);
   }
   fs.writeFileSync(file, text);
-  console.log(`  wrote: ${file}`);
+  console.log(`  ${msg("wrote")}: ${file}`);
 }
 
 function deepMerge(target, src) {
@@ -156,8 +169,8 @@ function applySettings(file, mode) {
   if (mode === "preview") {
     const before = new Map(flatten(current));
     const changes = flatten(next).filter(([k, v]) => k !== "$schema" && before.get(k) !== v);
-    if (!changes.length) console.log("  (no changes)");
-    for (const [k, v] of changes) console.log(`  ${k}: ${before.get(k) ?? "(unset)"} -> ${v}`);
+    if (!changes.length) console.log(`  ${msg("noChanges")}`);
+    for (const [k, v] of changes) console.log(`  ${k}: ${before.get(k) ?? msg("unset")} -> ${v}`);
     return;
   }
   writeJson(file, next);
@@ -168,10 +181,10 @@ function mergeMcp(file, kitFile, names) {
   const kit = readJson(kitFile).mcpServers || {};
   data.mcpServers = data.mcpServers || {};
   for (const name of names) {
-    if (data.mcpServers[name]) console.log(`  kept existing MCP server: ${name}`);
+    if (data.mcpServers[name]) console.log(`  ${msg("keptMcp")}: ${name}`);
     else if (kit[name]) {
       data.mcpServers[name] = kit[name];
-      console.log(`  added MCP server: ${name}`);
+      console.log(`  ${msg("addedMcp")}: ${name}`);
     }
   }
   writeJson(file, data);
