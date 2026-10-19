@@ -17,26 +17,40 @@ config/settings.json        pi settings: low thinking, codemode, compaction size
 config/mcp.json             Probe (local code search) + Context7 (docs)
 config/models.cloud.example.json  template for any OpenAI-compatible cloud provider
 extensions/quality-gate.ts  runs the project's fast check when the agent finishes and feeds failures back
+scripts/setup.sh            guided setup, run from a project folder: installs pi, configures local/cloud, installs the kit, prepares the project
+scripts/lib/pi-config.mjs   JSON/project helper used by setup.sh (backs up every file it changes)
 scripts/install.sh          installs skills, the extension, MCP config and package tiers
 scripts/count_tokens.py     compares token counts of skills/ vs skills-ja/ across tokenizers (HF tokenizer.json, OpenAI o200k, Kimi)
 ```
 
 ## Quick start
 
-1. **Fix the model config first.** Read [docs/gameplan.md](docs/gameplan.md), Phase 0. Merge [config/models.local.json](config/models.local.json) and [config/settings.json](config/settings.json) into `~/.pi/agent/` by hand (the script never overwrites these), and set `OMLX_API_KEY` to your oMLX key.
-2. **Install the skills (with the global `AGENTS.md`), the extension and the MCP config:**
-   ```bash
-   ./scripts/install.sh all
-   ```
-   ```bash
-   npm install -g @probelabs/probe@latest
-   ```
-3. **Install packages one tier at a time**, measuring as you go (gameplan Phase 6):
-   ```bash
-   ./scripts/install.sh packages core
-   ```
-   The other tiers are `tokens`, `ondemand`, `tuning`, `cloud` and `ab`. Prefix any command with `DRY_RUN=1` to preview it.
-4. **Per project:** write a short `AGENTS.md`, put a one-line fast check in `.pi/check` (for the quality gate), run the `project-map` skill once, and add `.pi/handoff.md` to `.gitignore`.
+Run the guided setup from inside the project you want to work on:
+
+```bash
+cd ~/path/to/your-project
+```
+
+```bash
+~/Development/pi-agent-kit/scripts/setup.sh
+```
+
+It walks through 7 steps and asks before each change:
+
+1. **Project:** confirms the folder.
+2. **pi:** installs pi if it's missing (the official installer or npm) and checks the version.
+3. **Models:** choose local, cloud or both.
+   - **Local:** oMLX, Ollama, LM Studio, a llama.cpp router, or any OpenAI-compatible server. The script lists the server's models and asks for the context window the server *actually* serves (for oMLX it reads `~/.omlx/settings.json`).
+   - **Cloud:** OpenRouter, DeepSeek, Z.ai, Moonshot, the other providers built into pi, or a custom OpenAI-compatible endpoint with prices and cache lifetime.
+   - **API keys:** store them in the macOS Keychain (pi runs `security` on each request), in an environment variable, with pi's own `/login`, or, for a local server only, as plain text.
+4. **Settings:** writes pi's settings (low thinking by default, codemode, compaction sized to the local window), sets the default model (globally or for this project only), and can add `pil`/`pic` shell aliases.
+5. **Kit:** installs the skills, the global `AGENTS.md`, the quality gate, and the Probe and Context7 MCP servers.
+6. **Packages:** offers each package tier separately. Every package runs code, so each one asks first.
+7. **Project files:** sets up git, `.pi/check` (detected from package.json, Cargo, Go or Python), a starter `AGENTS.md`, and `.gitignore`.
+
+Every pi config file it changes is backed up first (`<file>.backup-<timestamp>`), and it's safe to re-run. `--dry-run` asks the same questions but writes nothing.
+
+To install pieces by hand instead, `./scripts/install.sh all` installs the skills, `AGENTS.md`, the extension and the MCP config, and `./scripts/install.sh packages <tier>` installs one tier (`core`, `tokens`, `ondemand`, `tuning`, `cloud`, `ab`). Merge [config/models.local.json](config/models.local.json) and [config/settings.json](config/settings.json) into `~/.pi/agent/` yourself (gameplan Phase 0–1).
 
 ## Skills
 
