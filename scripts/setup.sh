@@ -159,10 +159,9 @@ command -v curl >/dev/null 2>&1 || die "$(t need_curl)"
 
 # ---------- 2. pi ----------
 step "$(t step_pi)"
-PATH="$PI_DIR/bin:$PATH"
-if command -v pi >/dev/null 2>&1; then
-  ok "$(t pi_found "$(pi --version 2>/dev/null)" "$(command -v pi)")"
-else
+# Keep the user's PATH while installing: pi's installer links pi into a folder that is already
+# on PATH (for example /opt/homebrew/bin), and it can only do that if we haven't added ours.
+if ! command -v pi >/dev/null 2>&1 && [[ ! -x $PI_DIR/bin/pi ]]; then
   warn "$(t pi_missing)"
   choose how "$(t pi_how)" "$(t pi_opt_official)" "$(t pi_opt_npm)" "$(t cancel)"
   case $how in
@@ -175,10 +174,26 @@ else
     3) exit 0 ;;
   esac
   hash -r
-  if [[ $DRY_RUN == 0 ]]; then
-    command -v pi >/dev/null 2>&1 || die "$(t pi_not_on_path)"
-    ok "$(t pi_installed "$(pi --version)")"
+fi
+if command -v pi >/dev/null 2>&1; then
+  ok "$(t pi_found "$(pi --version 2>/dev/null)" "$(command -v pi)")"
+elif [[ -x $PI_DIR/bin/pi ]]; then
+  # Installed, but the user's shell won't find it. Offer to fix the profile, then use it here.
+  warn "$(t pi_off_path "$PI_DIR/bin/pi")"
+  rc="$HOME/.bashrc"; [[ ${SHELL:-} == */zsh ]] && rc="$HOME/.zshrc"
+  line="export PATH=\"$PI_DIR/bin:\$PATH\""
+  if grep -qsF "$PI_DIR/bin" "$rc"; then
+    info "$(t path_in_rc "$rc")"
+  elif confirm "$(t path_add_q "$PI_DIR/bin" "$rc")" y; then
+    if [[ $DRY_RUN == 1 ]]; then run "append to $rc: $line"
+    else printf '\n# pi (added by fabeee-code setup)\n%s\n' "$line" >> "$rc"; ok "$(t path_added "$rc")"; fi
+  else
+    warn "$(t path_manual "$line")"
   fi
+  PATH="$PI_DIR/bin:$PATH"
+  ok "$(t pi_found "$(pi --version 2>/dev/null)" "$PI_DIR/bin/pi")"
+elif [[ $DRY_RUN == 0 ]]; then
+  die "$(t pi_not_on_path)"
 fi
 HAVE_PI=0; command -v pi >/dev/null 2>&1 && HAVE_PI=1
 if [[ $HAVE_PI == 1 ]]; then
