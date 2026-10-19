@@ -21,6 +21,7 @@ config/mcp.json             Probe (local code search) + Context7 (docs)
 config/models.cloud.example.json  template for any OpenAI-compatible cloud provider
 extensions/quality-gate.ts  runs the project's fast check when the agent finishes and feeds failures back
 extensions/skills-global.ts /skills-global pi command: copies chosen project skills to ~/.agents/skills
+extensions/agents-md-only.ts makes pi read only AGENTS.md (drops CLAUDE.md from its context files)
 scripts/setup.sh            guided setup, run from a project folder: installs pi, configures local/cloud, installs the kit, prepares the project
 scripts/lib/pi-config.mjs   JSON/project helper used by setup.sh (backs up every file it changes)
 scripts/lib/i18n.sh         message loader; catalogs in scripts/lib/lang/{en,ja,ko,bn}.txt
@@ -62,7 +63,7 @@ It first asks for a display language: English, 日本語, 한국어 or বাং
 4. **Settings:** writes pi's settings (low thinking by default, codemode, compaction sized to the local window), sets the default model (globally or for this project only), and can add `pil`/`pic` shell aliases.
 5. **Kit:** installs the skills **into this project** (`.agents/skills/`), the `/skills-global` command, the quality gate, and the Probe and Context7 MCP servers.
 6. **Packages:** offers each package tier separately. Every package runs code, so each one asks first.
-7. **Project files:** sets up git, `.pi/check` (detected from package.json, Cargo, Go or Python), a starter `AGENTS.md` if there's none, the agent-rules section in the project's `AGENTS.md` (replaced on re-runs, the rest of the file untouched), and `.gitignore`.
+7. **Project files:** sets up git, `.pi/check` (detected from package.json, Cargo, Go or Python), a starter `AGENTS.md` if there's none, the agent-rules section in the project's `AGENTS.md` (replaced on re-runs, the rest of the file untouched), and `.gitignore`. pi reads only `AGENTS.md`: an installed extension drops `CLAUDE.md` from its context, and setup warns if one exists but never edits it.
 
 Every pi config file it changes is backed up first (`<file>.backup-<timestamp>`), and it's safe to re-run. `--dry-run` asks the same questions but writes nothing.
 

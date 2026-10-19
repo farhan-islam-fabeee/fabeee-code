@@ -5,6 +5,7 @@
 #   ./scripts/install.sh skills [project]    copy skills/* to <project>/.agents/skills/ (default: current folder)
 #                                            and the /skills-global pi command to ~/.pi/agent/extensions/
 #   ./scripts/install.sh context [project]   add/update the rules section (context/AGENTS.md) in <project>/AGENTS.md
+#                                            and the extension that makes pi ignore CLAUDE.md
 #   ./scripts/install.sh extension           copy extensions/quality-gate.ts to ~/.pi/agent/extensions/
 #   ./scripts/install.sh mcp                 copy config/mcp.json to ~/.pi/agent/mcp.json (only if absent)
 #   ./scripts/install.sh packages <tier>     pi install the packages in a tier (see TIERS below)
@@ -57,9 +58,7 @@ install_skills() {
 
 install_context() {
   local project="${1:-${FABEEE_CODE_PROJECT:-$PWD}}" target
-  # Use the project's existing context file; pi reads AGENTS.md or CLAUDE.md.
   target="$project/AGENTS.md"
-  [[ ! -e $target && -e $project/CLAUDE.md ]] && target="$project/CLAUDE.md"
   local begin="<!-- fabeee-code:rules -->" end="<!-- /fabeee-code:rules -->" tmp
   tmp=$(mktemp)
   # Keep everything outside our marked section (dropping trailing blank lines), then append it fresh.
@@ -79,6 +78,9 @@ install_context() {
     t inst_agents_done "$target"; echo
   fi
   rm -f "$tmp" "$tmp.new"
+  # pi also reads CLAUDE.md; this extension drops it so AGENTS.md is the only context file.
+  run mkdir -p "$PI_DIR/extensions"
+  run cp "$ROOT/extensions/agents-md-only.ts" "$PI_DIR/extensions/agents-md-only.ts"
 }
 
 install_extension() {

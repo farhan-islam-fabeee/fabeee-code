@@ -146,7 +146,8 @@ check_written=.pi/check: %s
 agents_q=এই প্রজেক্টের জন্য একটি শুরুর AGENTS.md তৈরি করবেন (ছোট, ইংরেজিতে, শনাক্ত করা কমান্ডসহ)?
 agents_dry=AGENTS.md-এ যা লেখা হবে:
 agents_created=AGENTS.md তৈরি হয়েছে। TODO লাইনগুলো পূরণ করুন।
-agents_exists=প্রজেক্টে আগে থেকেই AGENTS.md বা CLAUDE.md আছে; এর বিষয়বস্তু যেমন আছে তেমনই থাকবে।
+agents_exists=প্রজেক্টে আগে থেকেই AGENTS.md আছে; এর বিষয়বস্তু যেমন আছে তেমনই থাকবে।
+claude_ignored=CLAUDE.md পাওয়া গেছে: pi এটি উপেক্ষা করবে এবং শুধু AGENTS.md পড়বে। যা এখনও দরকার তা AGENTS.md-এ সরিয়ে নিন (CLAUDE.md যেমন আছে তেমনই থাকবে)।
 gitignore_dry=.gitignore-এ .pi/handoff.md যোগ করা হবে
 gitignore_added=.gitignore: .pi/handoff.md যোগ করা হয়েছে
 # summary

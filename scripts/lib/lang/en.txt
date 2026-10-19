@@ -146,7 +146,8 @@ check_written=.pi/check: %s
 agents_q=Create a starter AGENTS.md for this project (short, English, with detected commands)?
 agents_dry=write AGENTS.md:
 agents_created=AGENTS.md created. Fill in the TODO lines.
-agents_exists=Project already has an AGENTS.md or CLAUDE.md; keeping its content.
+agents_exists=Project already has an AGENTS.md; keeping its content.
+claude_ignored=CLAUDE.md found: pi will ignore it and read only AGENTS.md. Move anything you still need into AGENTS.md (CLAUDE.md is left as is).
 gitignore_dry=append .pi/handoff.md to .gitignore
 gitignore_added=.gitignore: added .pi/handoff.md
 # summary
